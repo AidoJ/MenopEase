@@ -115,3 +115,8 @@
   border: 1px solid #cfc;
 }
 
+.med-info-hint {
+  color: var(--purple);
+  line-height: 1.4;
+}
+

@@ -21,6 +21,8 @@ const Medications = () => {
   const [todayLogs, setTodayLogs] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [newMedName, setNewMedName] = useState('')
+  const [selectedMasterMed, setSelectedMasterMed] = useState('')
+  const [useCustomName, setUseCustomName] = useState(false)
   const [newMedType, setNewMedType] = useState('medication')
   const [newMedSchedule, setNewMedSchedule] = useState({ time: '08:00', frequency: 'daily' })
 
@@ -104,7 +106,13 @@ const Medications = () => {
 
   const handleAddMedication = async (e) => {
     e.preventDefault()
-    if (!user || !newMedName.trim()) return
+    if (!user) return
+
+    const medName = useCustomName ? newMedName.trim() : selectedMasterMed
+    if (!medName) {
+      setError('Please select a medication or enter a custom name')
+      return
+    }
 
     setSaving(true)
     setError('')
@@ -112,7 +120,7 @@ const Medications = () => {
     try {
       const medData = {
         user_id: user.id,
-        name: newMedName.trim(),
+        name: medName,
         type: newMedType,
         schedule: newMedSchedule,
       }
@@ -123,6 +131,8 @@ const Medications = () => {
       setSuccess(true)
       setShowAddModal(false)
       setNewMedName('')
+      setSelectedMasterMed('')
+      setUseCustomName(false)
       setNewMedSchedule({ time: '08:00', frequency: 'daily' })
       setTimeout(() => setSuccess(false), 2000)
       
@@ -133,6 +143,22 @@ const Medications = () => {
       setError(err.message || 'Failed to add medication')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleMasterMedSelect = (medName) => {
+    setSelectedMasterMed(medName)
+    setUseCustomName(false)
+    setNewMedName('')
+    
+    // Auto-fill type based on master data if available
+    const masterMed = medicationsMaster.find(m => m.name === medName)
+    if (masterMed) {
+      if (masterMed.type?.toLowerCase().includes('hormone')) {
+        setNewMedType('medication')
+      } else if (masterMed.type?.toLowerCase().includes('supplement') || masterMed.type?.toLowerCase().includes('vitamin')) {
+        setNewMedType('supplement')
+      }
     }
   }
 
@@ -208,15 +234,64 @@ const Medications = () => {
             <h3>Add Medication</h3>
             <form onSubmit={handleAddMedication}>
               <div className="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={newMedName}
-                  onChange={(e) => setNewMedName(e.target.value)}
-                  placeholder="e.g., Estradiol Patch"
-                  required
-                />
+                <label>Select from Common Medications</label>
+                <select
+                  className="form-select"
+                  value={selectedMasterMed}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleMasterMedSelect(e.target.value)
+                    } else {
+                      setSelectedMasterMed('')
+                    }
+                  }}
+                  disabled={useCustomName}
+                >
+                  <option value="">Choose from list...</option>
+                  {medicationsMaster.map((med) => (
+                    <option key={med.id} value={med.name}>
+                      {med.name} {med.typical_dose ? `(${med.typical_dose})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {selectedMasterMed && (
+                  <div className="med-info-hint" style={{ marginTop: '8px', padding: '8px', background: 'var(--purple-light)', borderRadius: '8px', fontSize: '12px' }}>
+                    {medicationsMaster.find(m => m.name === selectedMasterMed)?.purpose && (
+                      <div><strong>Purpose:</strong> {medicationsMaster.find(m => m.name === selectedMasterMed).purpose}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group" style={{ textAlign: 'center', margin: '12px 0' }}>
+                <span style={{ color: 'var(--muted)', fontSize: '14px' }}>OR</span>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={useCustomName}
+                    onChange={(e) => {
+                      setUseCustomName(e.target.checked)
+                      if (e.target.checked) {
+                        setSelectedMasterMed('')
+                      }
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                  Enter Custom Medication Name
+                </label>
+                {useCustomName && (
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={newMedName}
+                    onChange={(e) => setNewMedName(e.target.value)}
+                    placeholder="e.g., Custom Medication Name"
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
               </div>
               
               <div className="form-group">
