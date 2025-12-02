@@ -1,0 +1,103 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  background: linear-gradient(
+    135deg,
+    var(--purple-light) 0%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(123, 91, 216, 0.1);
+}
+
+.stat-card.teal {
+  background: linear-gradient(
+    135deg,
+    var(--teal-light) 0%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  border-color: rgba(38, 198, 218, 0.1);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--purple);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-card.teal .stat-value {
+  color: var(--teal);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--glass) 0%, #ffffff 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(15, 15, 40, 0.03);
+}
+
+.quick-btn:active {
+  transform: scale(0.97);
+}
+
+.quick-btn .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: var(--purple-light);
+}
+
+.quick-btn.teal .icon {
+  background: var(--teal-light);
+}
+
+.quick-btn .label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.progress-bar {
+  background: rgba(0, 0, 0, 0.05);
+  height: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+

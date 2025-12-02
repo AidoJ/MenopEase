@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MenoTrak — Complete Tracker</title>
+  <style>
+    :root{
+      --bg:#f8f9fd;
+      --card:#ffffff;
+      --purple:#7b5bd8;
+      --teal:#26c6da;
+      --muted:#8b8ea6;
+      --glass: rgba(255,255,255,0.85);
+      --radius:16px;
+      --purple-light: rgba(123,91,216,0.08);
+      --teal-light: rgba(38,198,218,0.08);
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+    }
+    *{box-sizing:border-box; margin:0; padding:0}
+    body{background:linear-gradient(180deg,#fbfcff 0%, var(--bg) 100%);color:#1a1a1a;min-height:100vh}
+
+    .phone{
+      width:390px;
+      max-width:94vw;
+      margin:24px auto 100px;
+      border-radius:36px;
+      background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(252,252,254,0.9));
+      box-shadow:0 12px 40px rgba(20,20,50,0.08);
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.03);
+      padding-bottom:100px;
+    }
+
+    header{
+      padding:32px 24px 20px;
+      background:linear-gradient(135deg, var(--purple) 0%, #9a7ff0 100%);
+      color:white;
+    }
+
+    h1{font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px}
+    .subtitle{opacity:0.9;font-size:14px;font-weight:400}
+
+    main{padding:20px 20px 20px}
+
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:0 4px 16px rgba(15,15,40,0.04);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+
+    .card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+
+    .card-title{
+      font-size:18px;
+      font-weight:700;
+      color:#1a1a1a;
+    }
+
+    .card-subtitle{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    /* Stats Grid */
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .stat-card{
+      background:linear-gradient(135deg, var(--purple-light) 0%, rgba(255,255,255,0.5) 100%);
+      padding:16px;
+      border-radius:14px;
+      border:1px solid rgba(123,91,216,0.1);
+    }
+
+    .stat-card.teal{
+      background:linear-gradient(135deg, var(--teal-light) 0%, rgba(255,255,255,0.5) 100%);
+      border-color:rgba(38,198,218,0.1);
+    }
+
+    .stat-value{
+      font-size:28px;
+      font-weight:700;
+      color:var(--purple);
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .stat-card.teal .stat-value{
+      color:var(--teal);
+    }
+
+    .stat-label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    /* Quick Actions Grid */
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .quick-btn{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:14px;
+      background:linear-gradient(135deg, var(--glass) 0%, #ffffff 100%);
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,0.03);
+      cursor:pointer;
+      transition:all 0.2s;
+      box-shadow:0 2px 8px rgba(15,15,40,0.03);
+    }
+
+    .quick-btn:active{
+      transform:scale(0.97);
+    }
+
+    .quick-btn .icon{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      background:var(--purple-light);
+    }
+
+    .quick-btn.teal .icon{
+      background:var(--teal-light);
+    }
+
+    .quick-btn .label{
+      font-weight:600;
+      font-size:14px;
+    }
+
+    /* Sleep Display */
+    .sleep-display{
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+
+    .sleep-icon{
+      width:64px;
+      height:64px;
+      border-radius:16px;
+      background:linear-gradient(135deg, var(--purple) 0%, #9a7ff0 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:32px;
+    }
+
+    .sleep-info{
+      flex:1;
+    }
+
+    .sleep-time{
+      font-size:24px;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .sleep-quality{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .stars{
+      color:#ffa726;
+      font-size:16px;
+    }
+
+    /* Symptom List */
+    .symptom-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .symptom-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px;
+      border-radius:12px;
+      background:rgba(248,249,253,0.8);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+
+    .symptom-name{
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .symptom-badge{
+      background:var(--purple-light);
+      color:var(--purple);
+      padding:6px 12px;
+      border-radius:20px;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    /* Medication List */
+    .med-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .med-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px;
+      border-radius:12px;
+      background:rgba(248,249,253,0.8);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+
+    .med-info{
+      flex:1;
+    }
+
+    .med-name{
+      font-weight:600;
+      font-size:14px;
+      margin-bottom:3px;
+    }
+
+    .med-time{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .checkbox{
+      width:24px;
+      height:24px;
+      border-radius:6px;
+      border:2px solid var(--purple);
+      cursor:pointer;
+    }
+
+    .checkbox.checked{
+      background:var(--purple);
+      position:relative;
+    }
+
+    .checkbox.checked::after{
+      content:'✓';
+      color:white;
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      font-size:14px;
+      font-weight:700;
+    }
+
+    /* Food List */
+    .food-search{
+      width:100%;
+      padding:12px 16px;
+      border-radius:12px;
+      border:2px solid rgba(123,91,216,0.15);
+      font-size:15px;
+      margin-bottom:12px;
+    }
+
+    .food-search:focus{
+      outline:none;
+      border-color:var(--purple);
+    }
+
+    .food-items{
+      max-height:280px;
+      overflow-y:auto;
+      margin-bottom:12px;
+    }
+
+    .food-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      margin-bottom:8px;
+      border-radius:10px;
+      background:rgba(248,249,253,0.8);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+
+    .food-info .name{
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .food-info .category{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .add-btn{
+      background:var(--teal);
+      color:white;
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:13px;
+      cursor:pointer;
+    }
+
+    .added-items{
+      margin-top:12px;
+    }
+
+    .added-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      margin-bottom:8px;
+      border-radius:10px;
+      background:var(--teal-light);
+      border:1px solid rgba(38,198,218,0.2);
+    }
+
+    .remove-btn{
+      background:#f44336;
+      color:white;
+      border:none;
+      padding:6px 12px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    /* Selection Buttons */
+    .selection-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .selection-btn{
+      padding:14px 8px;
+      border-radius:12px;
+      background:white;
+      border:2px solid rgba(123,91,216,0.15);
+      cursor:pointer;
+      text-align:center;
+      transition:all 0.2s;
+    }
+
+    .selection-btn.selected{
+      background:var(--purple);
+      border-color:var(--purple);
+      color:white;
+    }
+
+    .selection-btn .emoji{
+      font-size:28px;
+      display:block;
+      margin-bottom:6px;
+    }
+
+    .selection-btn .label{
+      font-size:11px;
+      font-weight:600;
+    }
+
+    .selection-btn.selected .label{
+      color:white;
+    }
+
+    /* Checkbox Grid */
+    .checkbox-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .checkbox-item{
+      padding:14px;
+      border-radius:12px;
+      background:white;
+      border:2px solid rgba(0,0,0,0.05);
+      cursor:pointer;
+      text-align:center;
+      transition:all 0.2s;
+    }
+
+    .checkbox-item.checked{
+      background:var(--teal-light);
+      border-color:var(--teal);
+    }
+
+    .checkbox-item .icon{
+      font-size:24px;
+      display:block;
+      margin-bottom:6px;
+    }
+
+    .checkbox-item .text{
+      font-size:13px;
+      font-weight:600;
+    }
+
+    /* Form Elements */
+    .form-group{
+      margin-bottom:18px;
+    }
+
+    .form-label{
+      display:block;
+      font-weight:600;
+      font-size:14px;
+      margin-bottom:8px;
+      color:#333;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:2px solid rgba(123,91,216,0.15);
+      font-size:15px;
+      font-family:inherit;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus{
+      outline:none;
+      border-color:var(--purple);
+    }
+
+    .form-textarea{
+      resize:vertical;
+      min-height:100px;
+    }
+
+    /* Water Counter */
+    .water-counter{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:24px;
+      margin:20px 0;
+    }
+
+    .water-btn{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:var(--teal);
+      color:white;
+      border:none;
+      font-size:28px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(38,198,218,0.25);
+    }
+
+    .water-display{
+      font-size:40px;
+      font-weight:700;
+      color:var(--teal);
+      min-width:120px;
+      text-align:center;
+    }
+
+    /* Insight Cards */
+    .insight-card{
+      padding:16px;
+      border-radius:14px;
+      margin-bottom:12px;
+      background:linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+      border:1px solid #ffb74d;
+    }
+
+    .insight-card.purple{
+      background:linear-gradient(135deg, var(--purple-light) 0%, rgba(154,127,240,0.1) 100%);
+      border-color:rgba(123,91,216,0.3);
+    }
+
+    .insight-card.teal{
+      background:linear-gradient(135deg, var(--teal-light) 0%, rgba(38,198,218,0.1) 100%);
+      border-color:rgba(38,198,218,0.3);
+    }
+
+    .insight-icon{
+      font-size:24px;
+      margin-bottom:8px;
+    }
+
+    .insight-title{
+      font-weight:700;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+
+    .insight-desc{
+      font-size:13px;
+      color:#555;
+      line-height:1.5;
+    }
+
+    /* Primary Button */
+    .btn-primary{
+      width:100%;
+      padding:16px;
+      background:var(--purple);
+      color:white;
+      border:none;
+      border-radius:14px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 4px 14px rgba(123,91,216,0.25);
+      transition:all 0.2s;
+    }
+
+    .btn-primary:active{
+      transform:scale(0.98);
+    }
+
+    .btn-primary.teal{
+      background:var(--teal);
+      box-shadow:0 4px 14px rgba(38,198,218,0.25);
+    }
+
+    /* Progress Bar */
+    .progress-bar{
+      background:rgba(0,0,0,0.05);
+      height:10px;
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+
+    .progress-fill{
+      height:100%;
+      background:var(--purple);
+      border-radius:10px;
+      transition:width 0.3s;
+    }
+
+    .progress-fill.teal{
+      background:var(--teal);
+    }
+
+    /* Bottom Nav */
+    nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:20px;
+      width:380px;
+      max-width:94vw;
+      display:flex;
+      gap:6px;
+      background:linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(252,252,254,0.9) 100%);
+      padding:12px;
+      border-radius:20px;
+      box-shadow:0 8px 30px rgba(15,15,40,0.08);
+      border:1px solid rgba(0,0,0,0.03);
+    }
+
+    .nav-btn{
+      flex:1;
+      padding:10px;
+      border-radius:14px;
+      text-align:center;
+      cursor:pointer;
+      transition:all 0.2s;
+      background:transparent;
+      border:none;
+    }
+
+    .nav-btn.active{
+      background:var(--purple-light);
+    }
+
+    .nav-btn .icon{
+      font-size:22px;
+      display:block;
+      margin-bottom:4px;
+      opacity:0.6;
+    }
+
+    .nav-btn.active .icon{
+      opacity:1;
+    }
+
+    .nav-btn .label{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .nav-btn.active .label{
+      color:var(--purple);
+    }
+
+    /* Screen Management */
+    .screen{
+      display:none;
+    }
+
+    .screen.active{
+      display:block;
+    }
+
+    /* Page Title */
+    .page-title{
+      font-size:24px;
+      font-weight:700;
+      margin-bottom:20px;
+      color:#1a1a1a;
+      text-align:center;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{
+      width:6px;
+    }
+
+    ::-webkit-scrollbar-track{
+      background:rgba(0,0,0,0.02);
+    }
+
+    ::-webkit-scrollbar-thumb{
+      background:var(--purple);
+      border-radius:10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <header>
+      <h1>MenoTrak</h1>
+      <div class="subtitle">Friday, November 29, 2025</div>
+    </header>
+
+    <main>
+      <!-- DASHBOARD SCREEN -->
+      <div id="dashboard" class="screen active">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Today's Overview</div>
+              <div class="card-subtitle">Your daily health snapshot</div>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-value">7.5h</span>
+              <span class="stat-label">Sleep</span>
+            </div>
+            <div class="stat-card teal">
+              <span class="stat-value">😊</span>
+              <span class="stat-label">Energy</span>
+            </div>
+            <div class="stat-card teal">
+              <span class="stat-value">1.8L</span>
+              <span class="stat-label">Water</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">3/3</span>
+              <span class="stat-label">Meals</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Quick Log</div>
+              <div class="card-subtitle">Track your day</div>
+            </div>
+          </div>
+          <div class="quick-grid">
+            <div class="quick-btn" onclick="showScreen('sleep')">
+              <div class="icon">🌙</div>
+              <div class="label">Sleep</div>
+            </div>
+            <div class="quick-btn teal" onclick="showScreen('food')">
+              <div class="icon">🍽️</div>
+              <div class="label">Food</div>
+            </div>
+            <div class="quick-btn" onclick="showScreen('symptoms')">
+              <div class="icon">📋</div>
+              <div class="label">Symptoms</div>
+            </div>
+            <div class="quick-btn teal" onclick="showScreen('meds')">
+              <div class="icon">💊</div>
+              <div class="label">Medications</div>
+            </div>
+            <div class="quick-btn" onclick="showScreen('exercise')">
+              <div class="icon">🏃</div>
+              <div class="label">Exercise</div>
+            </div>
+            <div class="quick-btn teal" onclick="showScreen('mood')">
+              <div class="icon">💆</div>
+              <div class="label">Mood</div>
+            </div>
+            <div class="quick-btn" onclick="showScreen('mood')">
+              <div class="icon">🌤️</div>
+              <div class="label">Weather</div>
+            </div>
+            <div class="quick-btn teal" onclick="showScreen('journal')">
+              <div class="icon">📝</div>
+              <div class="label">Journal</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Today's Weather</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="font-size:48px">☀️</div>
+              <div>
+                <div style="font-size:32px;font-weight:700;color:var(--purple)">22°C</div>
+                <div style="font-size:13px;color:var(--muted)">Sunny & Clear</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Humidity: 65%</div>
+              <div style="font-size:13px;color:var(--muted)">Pressure: 1013 mb</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:12px;background:var(--teal-light);border-radius:10px;font-size:13px;color:#555">
+            💡 Barometric pressure is normal - good day for low symptom activity
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Tracking Streak</div>
+          </div>
+          <p style="font-size:14px;margin-bottom:10px">You've logged data for <strong>7 days</strong> in a row! 🎉</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:70%"></div>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px">70% of daily goals completed</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Today's Journal</div>
+              <div class="card-subtitle">Personal insights & reflections</div>
+            </div>
+          </div>
+          <div style="background:var(--purple-light);padding:14px;border-radius:12px;border:1px solid rgba(123,91,216,0.15);margin-bottom:12px">
+            <div style="font-size:13px;color:#555;font-style:italic;line-height:1.6">
+              "Noticed hot flashes were worse after lunch today. Think it might have been the cheese in my sandwich. Weather was humid too..."
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:var(--muted)">Last entry: Today, 2:30 PM</div>
+          </div>
+          <button class="btn-primary" onclick="showScreen('journal')" style="padding:12px;font-size:14px">Add Today's Entry</button>
+        </div>
+      </div>
+
+      <!-- SLEEP SCREEN -->
+      <div id="sleep" class="screen">
+        <div class="page-title">Sleep Log</div>
+
+        <div class="card">
+          <div class="card-title">How did you sleep?</div>
+
+          <div class="form-group">
+            <div class="form-label">Sleep Quality</div>
+            <div class="selection-grid">
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">😫</span>
+                <span class="label">Awful</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">😔</span>
+                <span class="label">Poor</span>
+              </div>
+              <div class="selection-btn selected" onclick="selectBtn(this)">
+                <span class="emoji">😊</span>
+                <span class="label">Good</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">😄</span>
+                <span class="label">Great</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Sleep Duration</div>
+            <input type="time" class="form-input" value="23:00" placeholder="Bedtime">
+            <input type="time" class="form-input" value="06:30" placeholder="Wake time" style="margin-top:10px">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Night Sweats?</div>
+            <div class="selection-grid">
+              <div class="selection-btn selected" onclick="selectBtn(this)">
+                <span class="emoji">✅</span>
+                <span class="label">None</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">😓</span>
+                <span class="label">Mild</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">💦</span>
+                <span class="label">Moderate</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">🥵</span>
+                <span class="label">Severe</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Sleep Disturbances</div>
+            <textarea class="form-textarea" placeholder="Note any issues: insomnia, waking up, restlessness..."></textarea>
+          </div>
+
+          <button class="btn-primary">Save Sleep Log</button>
+        </div>
+      </div>
+
+      <!-- FOOD SCREEN -->
+      <div id="food" class="screen">
+        <div class="page-title">Food Log</div>
+
+        <div class="card">
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button class="btn-primary teal" style="flex:1;padding:12px;font-size:14px">Copy from Yesterday</button>
+          </div>
+
+          <div class="card-title">Log Your Meal</div>
+
+          <div class="form-group">
+            <div class="form-label">Meal Type</div>
+            <select class="form-select">
+              <option>Breakfast</option>
+              <option>Lunch</option>
+              <option>Dinner</option>
+              <option>Snack</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Add Food Items</div>
+            <input type="text" class="food-search" placeholder="Search: chicken, bread, milk, cheese..." id="foodSearch" onkeyup="filterFood()">
+          </div>
+
+          <div class="food-items" id="foodList">
+            <div class="food-item" data-name="chicken">
+              <div class="food-info">
+                <div class="name">Chicken Breast</div>
+                <div class="category">Protein</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Chicken Breast','Protein')">Add</button>
+            </div>
+            <div class="food-item" data-name="bread">
+              <div class="food-info">
+                <div class="name">Whole Wheat Bread</div>
+                <div class="category">Grain</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Whole Wheat Bread','Grain')">Add</button>
+            </div>
+            <div class="food-item" data-name="milk">
+              <div class="food-info">
+                <div class="name">Milk</div>
+                <div class="category">Dairy</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Milk','Dairy')">Add</button>
+            </div>
+            <div class="food-item" data-name="cheese">
+              <div class="food-info">
+                <div class="name">Cheese</div>
+                <div class="category">Dairy</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Cheese','Dairy')">Add</button>
+            </div>
+            <div class="food-item" data-name="eggs">
+              <div class="food-info">
+                <div class="name">Eggs</div>
+                <div class="category">Protein</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Eggs','Protein')">Add</button>
+            </div>
+            <div class="food-item" data-name="meat">
+              <div class="food-info">
+                <div class="name">Red Meat</div>
+                <div class="category">Protein</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Red Meat','Protein')">Add</button>
+            </div>
+            <div class="food-item" data-name="salmon">
+              <div class="food-info">
+                <div class="name">Salmon</div>
+                <div class="category">Protein</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Salmon','Protein')">Add</button>
+            </div>
+            <div class="food-item" data-name="yogurt">
+              <div class="food-info">
+                <div class="name">Greek Yogurt</div>
+                <div class="category">Dairy</div>
+              </div>
+              <button class="add-btn" onclick="addFood('Greek Yogurt','Dairy')">Add</button>
+            </div>
+          </div>
+
+          <div class="added-items" id="addedItems">
+            <div class="form-label">This Meal:</div>
+            <div class="added-item">
+              <div class="food-info">
+                <div class="name">Oatmeal</div>
+                <div class="category">Grain</div>
+              </div>
+              <button class="remove-btn" onclick="removeFood(this)">Remove</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Post-Meal Symptoms</div>
+            <div class="checkbox-grid">
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🔥</span>
+                <span class="text">Hot Flash</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🎈</span>
+                <span class="text">Bloating</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">😰</span>
+                <span class="text">Anxiety</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">📉</span>
+                <span class="text">Energy Crash</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-primary teal">Save Meal</button>
+        </div>
+      </div>
+
+      <!-- SYMPTOMS SCREEN -->
+      <div id="symptoms" class="screen">
+        <div class="page-title">Symptoms Tracker</div>
+
+        <div class="card">
+          <div class="card-title">Physical Symptoms</div>
+          <div class="card-subtitle">Track what you're experiencing</div>
+
+          <div class="checkbox-grid">
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🔥</span>
+              <span class="text">Hot Flashes</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">💦</span>
+              <span class="text">Night Sweats</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🤕</span>
+              <span class="text">Headache</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🎈</span>
+              <span class="text">Bloating</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🦴</span>
+              <span class="text">Joint Pain</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">💗</span>
+              <span class="text">Libido Changes</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🌸</span>
+              <span class="text">Vaginal Dryness</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">✨</span>
+              <span class="text">Skin Issues</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Emotional Symptoms</div>
+
+          <div class="checkbox-grid">
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😰</span>
+              <span class="text">Anxiety</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😡</span>
+              <span class="text">Irritability</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🌫️</span>
+              <span class="text">Brain Fog</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😔</span>
+              <span class="text">Low Mood</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:20px">
+            <div class="form-label">Overall Severity (1-10)</div>
+            <input type="range" min="1" max="10" value="5" style="width:100%;accent-color:var(--purple)" oninput="updateSeverity(this)">
+            <div style="text-align:center;font-size:24px;font-weight:700;color:var(--purple);margin-top:10px">
+              <span id="severityVal">5</span> / 10
+            </div>
+          </div>
+
+          <button class="btn-primary">Save Symptoms</button>
+        </div>
+      </div>
+
+      <!-- MEDICATIONS SCREEN -->
+      <div id="meds" class="screen">
+        <div class="page-title">Medications & Therapies</div>
+
+        <div class="card">
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button class="btn-primary teal" style="flex:1;padding:12px;font-size:14px">Copy from Yesterday</button>
+          </div>
+
+          <div class="card-title">Today's Schedule</div>
+          <div class="card-subtitle">Track your medications & supplements</div>
+
+          <div class="med-list">
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Estrogen (HRT)</div>
+                <div class="med-time">8:00 AM • Daily</div>
+              </div>
+              <div class="checkbox checked" onclick="toggleMed(this)"></div>
+            </div>
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Progesterone</div>
+                <div class="med-time">9:00 PM • Daily</div>
+              </div>
+              <div class="checkbox" onclick="toggleMed(this)"></div>
+            </div>
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Vitamin D3</div>
+                <div class="med-time">8:00 AM • Daily</div>
+              </div>
+              <div class="checkbox checked" onclick="toggleMed(this)"></div>
+            </div>
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Magnesium</div>
+                <div class="med-time">9:00 PM • Daily</div>
+              </div>
+              <div class="checkbox" onclick="toggleMed(this)"></div>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:16px">Add Medication</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Therapies & Treatments</div>
+          <div class="card-subtitle">Track ongoing therapies</div>
+
+          <div class="med-list">
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Acupuncture</div>
+                <div class="med-time">Weekly • Wednesdays</div>
+              </div>
+              <div class="checkbox checked" onclick="toggleMed(this)"></div>
+            </div>
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Massage Therapy</div>
+                <div class="med-time">Bi-weekly • As needed</div>
+              </div>
+              <div class="checkbox" onclick="toggleMed(this)"></div>
+            </div>
+            <div class="med-item">
+              <div class="med-info">
+                <div class="med-name">Counseling</div>
+                <div class="med-time">Weekly • Mondays</div>
+              </div>
+              <div class="checkbox" onclick="toggleMed(this)"></div>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:16px">Add Therapy</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Adherence Streak</div>
+          <div style="text-align:center;padding:24px 0">
+            <div style="font-size:56px;font-weight:700;color:var(--purple)">7</div>
+            <div style="font-size:16px;color:var(--muted);margin-top:8px">Days in a row!</div>
+            <div style="margin-top:16px;font-size:14px;color:#555">Keep it up! Consistency is key.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXERCISE SCREEN -->
+      <div id="exercise" class="screen">
+        <div class="page-title">Exercise & Activity</div>
+
+        <div class="card">
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button class="btn-primary teal" style="flex:1;padding:12px;font-size:14px">Copy from Yesterday</button>
+          </div>
+
+          <div class="card-title">Log Activity</div>
+
+          <div class="form-group">
+            <div class="form-label">Activity Type</div>
+            <select class="form-select">
+              <option>Walking</option>
+              <option>Running</option>
+              <option>Yoga</option>
+              <option>Strength Training</option>
+              <option>Swimming</option>
+              <option>Cycling</option>
+              <option>Dance</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Duration (minutes)</div>
+            <input type="number" class="form-input" placeholder="30" min="1">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Intensity</div>
+            <div class="selection-grid">
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">😌</span>
+                <span class="label">Light</span>
+              </div>
+              <div class="selection-btn selected" onclick="selectBtn(this)">
+                <span class="emoji">🙂</span>
+                <span class="label">Moderate</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">💪</span>
+                <span class="label">Vigorous</span>
+              </div>
+              <div class="selection-btn" onclick="selectBtn(this)">
+                <span class="emoji">🔥</span>
+                <span class="label">Intense</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Notes</div>
+            <textarea class="form-textarea" placeholder="How did you feel? Energy levels, pain, mood..."></textarea>
+          </div>
+
+          <button class="btn-primary teal">Save Activity</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">This Week</div>
+          <div style="background:var(--teal-light);padding:24px;border-radius:14px;text-align:center;border:1px solid rgba(38,198,218,0.2)">
+            <div style="font-size:48px;font-weight:700;color:var(--teal)">4</div>
+            <div style="font-size:16px;color:#555;margin-top:8px">Workouts Completed</div>
+            <div style="font-size:14px;color:var(--muted);margin-top:4px">150 minutes total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOOD & WELLNESS SCREEN -->
+      <div id="mood" class="screen">
+        <div class="page-title">Mood & Wellness</div>
+
+        <div class="card">
+          <div class="card-title">Energy Level</div>
+          <div class="selection-grid">
+            <div class="selection-btn" onclick="selectBtn(this)">
+              <span class="emoji">😴</span>
+              <span class="label">Crashed</span>
+            </div>
+            <div class="selection-btn" onclick="selectBtn(this)">
+              <span class="emoji">😐</span>
+              <span class="label">Low</span>
+            </div>
+            <div class="selection-btn selected" onclick="selectBtn(this)">
+              <span class="emoji">🙂</span>
+              <span class="label">OK</span>
+            </div>
+            <div class="selection-btn" onclick="selectBtn(this)">
+              <span class="emoji">⚡</span>
+              <span class="label">Energised</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Mental Clarity</div>
+          <div class="checkbox-grid">
+            <div class="checkbox-item checked" onclick="toggleCheck(this)">
+              <span class="icon">✨</span>
+              <span class="text">Clear</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🌫️</span>
+              <span class="text">Foggy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Emotional State</div>
+          <div class="card-subtitle">Select all that apply</div>
+          <div class="checkbox-grid">
+            <div class="checkbox-item checked" onclick="toggleCheck(this)">
+              <span class="icon">😌</span>
+              <span class="text">Calm</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😰</span>
+              <span class="text">Frazzled</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🤗</span>
+              <span class="text">Connected</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😔</span>
+              <span class="text">Withdrawn</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">💪</span>
+              <span class="text">Steady</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">😣</span>
+              <span class="text">Overwhelmed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Stress Management</div>
+          <div class="checkbox-grid">
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🧘</span>
+              <span class="text">Meditation</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🫁</span>
+              <span class="text">Breathwork</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px">
+            <div class="form-label">Tension Zones</div>
+            <div class="checkbox-grid">
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">💆</span>
+                <span class="text">Shoulders</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">😬</span>
+                <span class="text">Jaw</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🫀</span>
+                <span class="text">Chest</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🧠</span>
+                <span class="text">Head</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Hydration</div>
+          <div class="card-subtitle">Track water, caffeine & alcohol</div>
+
+          <div class="water-counter">
+            <button class="water-btn" onclick="decWater()">−</button>
+            <div class="water-display" id="waterDisplay">1.8L</div>
+            <button class="water-btn" onclick="incWater()">+</button>
+          </div>
+
+          <div class="checkbox-grid">
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">☕</span>
+              <span class="text">Caffeine Today</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleCheck(this)">
+              <span class="icon">🍷</span>
+              <span class="text">Alcohol Today</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Weather Impact</div>
+          <div class="card-subtitle">How is today's weather affecting you?</div>
+
+          <div style="background:var(--purple-light);padding:14px;border-radius:12px;margin:12px 0;border:1px solid rgba(123,91,216,0.15)">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+              <span style="font-size:32px">☀️</span>
+              <div>
+                <div style="font-size:18px;font-weight:700">22°C • Sunny</div>
+                <div style="font-size:12px;color:var(--muted)">Humidity: 65% • Pressure: 1013 mb</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Weather-Related Symptoms</div>
+            <div class="checkbox-grid">
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🔥</span>
+                <span class="text">Heat Sensitivity</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🤕</span>
+                <span class="text">Pressure Headache</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">🦴</span>
+                <span class="text">Joint Stiffness</span>
+              </div>
+              <div class="checkbox-item" onclick="toggleCheck(this)">
+                <span class="icon">😰</span>
+                <span class="text">Weather Anxiety</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Notes</div>
+            <textarea class="form-textarea" placeholder="How is the weather affecting your symptoms today?"></textarea>
+          </div>
+        </div>
+
+        <button class="btn-primary">Save Wellness Log</button>
+      </div>
+
+      <!-- INSIGHTS SCREEN -->
+      <div id="insights" class="screen">
+        <div class="page-title">Your Insights</div>
+
+        <div class="card">
+          <div class="card-title">Pattern Detection</div>
+          <div class="card-subtitle">AI-powered insights from your tracking</div>
+
+          <div style="margin-top:14px">
+            <div class="insight-card purple">
+              <div class="insight-icon">💡</div>
+              <div class="insight-title">Sleep Pattern</div>
+              <div class="insight-desc">You sleep 20% better on days when you avoid caffeine after 2 PM</div>
+            </div>
+
+            <div class="insight-card teal">
+              <div class="insight-icon">🔥</div>
+              <div class="insight-title">Hot Flash Trigger</div>
+              <div class="insight-desc">Hot flashes increase 40% after dairy consumption</div>
+            </div>
+
+            <div class="insight-card">
+              <div class="insight-icon">⚡</div>
+              <div class="insight-title">Energy Boost</div>
+              <div class="insight-desc">Protein-rich breakfasts correlate with 30% higher energy levels</div>
+            </div>
+
+            <div class="insight-card purple">
+              <div class="insight-icon">🏃</div>
+              <div class="insight-title">Exercise Impact</div>
+              <div class="insight-desc">Morning workouts reduce anxiety symptoms by 25%</div>
+            </div>
+
+            <div class="insight-card">
+              <div class="insight-icon">🌦️</div>
+              <div class="insight-title">Weather Correlation</div>
+              <div class="insight-desc">Your headaches increase by 35% on days with low barometric pressure. Joint pain is 20% worse in high humidity.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Weekly Summary</div>
+
+          <div style="margin-top:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-weight:600">Hot Flashes</span>
+              <span style="font-weight:700;color:var(--purple)">12 times</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:80%"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-weight:600">Anxiety</span>
+              <span style="font-weight:700;color:var(--teal)">8 times</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill teal" style="width:50%"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-weight:600">Joint Pain</span>
+              <span style="font-weight:700;color:var(--purple)">5 times</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:30%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Doctor Report</div>
+          <div class="card-subtitle">Export summary for your healthcare provider</div>
+          <button class="btn-primary" style="margin-top:12px">Generate PDF Report</button>
+        </div>
+      </div>
+
+      <!-- JOURNAL SCREEN -->
+      <div id="journal" class="screen">
+        <div class="page-title">Daily Journal</div>
+
+        <div class="card">
+          <div class="card-title">Friday, November 29, 2025</div>
+          <div class="card-subtitle">Capture your thoughts, patterns & insights</div>
+
+          <div class="form-group">
+            <div class="form-label">Today's Entry</div>
+            <textarea class="form-textarea" placeholder="How are you feeling today? Notice any patterns or triggers? Any insights about your symptoms, food, mood, or activities?" style="min-height:200px">Noticed hot flashes were worse after lunch today. Think it might have been the cheese in my sandwich. Weather was humid too which probably didn't help.
+
+Energy levels were good in the morning after yoga, but crashed around 3 PM. Should try eating a snack earlier.
+
+Sleep was okay - only one night sweat around 2 AM. Much better than earlier this week!</textarea>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Mood Summary</div>
+            <select class="form-select">
+              <option>Overall Good Day</option>
+              <option>Challenging Day</option>
+              <option>Mixed Day</option>
+              <option>Great Day</option>
+            </select>
+          </div>
+
+          <button class="btn-primary">Save Journal Entry</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Recent Entries</div>
+          <div class="card-subtitle">Your last 7 days</div>
+
+          <div style="margin-top:14px">
+            <div style="padding:14px;border-radius:12px;background:rgba(248,249,253,0.8);border:1px solid rgba(0,0,0,0.02);margin-bottom:10px;cursor:pointer" onclick="alert('Load full entry')">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-weight:700;font-size:14px">Thursday, Nov 28</div>
+                <div style="font-size:11px;color:var(--muted)">Great Day</div>
+              </div>
+              <div style="font-size:13px;color:#555;line-height:1.5">
+                "Best day this week! No hot flashes at all. Slept through the night..."
+              </div>
+            </div>
+
+            <div style="padding:14px;border-radius:12px;background:rgba(248,249,253,0.8);border:1px solid rgba(0,0,0,0.02);margin-bottom:10px;cursor:pointer" onclick="alert('Load full entry')">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-weight:700;font-size:14px">Wednesday, Nov 27</div>
+                <div style="font-size:11px;color:var(--muted)">Challenging Day</div>
+              </div>
+              <div style="font-size:13px;color:#555;line-height:1.5">
+                "Tough morning with multiple hot flashes. Coffee made anxiety worse..."
+              </div>
+            </div>
+
+            <div style="padding:14px;border-radius:12px;background:rgba(248,249,253,0.8);border:1px solid rgba(0,0,0,0.02);margin-bottom:10px;cursor:pointer" onclick="alert('Load full entry')">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-weight:700;font-size:14px">Tuesday, Nov 26</div>
+                <div style="font-size:11px;color:var(--muted)">Mixed Day</div>
+              </div>
+              <div style="font-size:13px;color:#555;line-height:1.5">
+                "Started acupuncture today. Felt relaxed afterwards. Night sweats were mild..."
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-primary teal" style="margin-top:12px;padding:12px;font-size:14px">View All Entries</button>
+        </div>
+      </div>
+    </main>
+
+    <nav>
+      <button class="nav-btn active" onclick="navTo('dashboard',this)">
+        <span class="icon">🏠</span>
+        <span class="label">Home</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('symptoms',this)">
+        <span class="icon">📋</span>
+        <span class="label">Track</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('mood',this)">
+        <span class="icon">💆</span>
+        <span class="label">Wellness</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('insights',this)">
+        <span class="icon">💡</span>
+        <span class="label">Insights</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    let waterValue = 1.8;
+
+    function showScreen(id){
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0,0);
+    }
+
+    function navTo(id, btn){
+      showScreen(id);
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function selectBtn(btn){
+      btn.parentElement.querySelectorAll('.selection-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function toggleCheck(item){
+      item.classList.toggle('checked');
+    }
+
+    function toggleMed(cb){
+      cb.classList.toggle('checked');
+    }
+
+    function updateSeverity(slider){
+      document.getElementById('severityVal').textContent = slider.value;
+    }
+
+    function filterFood(){
+      const val = document.getElementById('foodSearch').value.toLowerCase();
+      document.querySelectorAll('.food-item').forEach(item => {
+        const name = item.getAttribute('data-name');
+        item.style.display = name.includes(val) ? '' : 'none';
+      });
+    }
+
+    function addFood(name, cat){
+      const container = document.getElementById('addedItems');
+      const div = document.createElement('div');
+      div.className = 'added-item';
+      div.innerHTML = `
+        <div class="food-info">
+          <div class="name">${name}</div>
+          <div class="category">${cat}</div>
+        </div>
+        <button class="remove-btn" onclick="removeFood(this)">Remove</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeFood(btn){
+      btn.parentElement.remove();
+    }
+
+    function incWater(){
+      waterValue += 0.2;
+      document.getElementById('waterDisplay').textContent = waterValue.toFixed(1) + 'L';
+    }
+
+    function decWater(){
+      if(waterValue > 0.2){
+        waterValue -= 0.2;
+        document.getElementById('waterDisplay').textContent = waterValue.toFixed(1) + 'L';
+      }
+    }
+  </script>
+</body>
+</html>

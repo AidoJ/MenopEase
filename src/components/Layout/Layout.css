@@ -1,0 +1,31 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 390px;
+  margin: 0 auto;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(252, 252, 254, 0.9)
+  );
+  box-shadow: 0 12px 40px rgba(20, 20, 50, 0.08);
+  border-radius: 36px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 100px;
+  overflow-y: auto;
+}
+
+@media (max-width: 390px) {
+  .layout {
+    max-width: 100%;
+    border-radius: 0;
+  }
+}
+

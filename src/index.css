@@ -1,0 +1,55 @@
+:root {
+  --bg: #f8f9fd;
+  --card: #ffffff;
+  --purple: #7b5bd8;
+  --teal: #26c6da;
+  --muted: #8b8ea6;
+  --glass: rgba(255, 255, 255, 0.85);
+  --radius: 16px;
+  --purple-light: rgba(123, 91, 216, 0.08);
+  --teal-light: rgba(38, 198, 218, 0.08);
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --border: rgba(0, 0, 0, 0.02);
+  --shadow: 0 4px 16px rgba(15, 15, 40, 0.04);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--purple);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a4fc4;
+}
+
