@@ -19,11 +19,52 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
-      if (error) throw error
-      navigate('/')
+      console.log('Login attempt starting...', { email })
+      const { data, error } = await signIn(email, password)
+      
+      console.log('Login response:', { data, error })
+      
+      if (error) {
+        console.error('Login error object:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          fullError: JSON.stringify(error, null, 2)
+        })
+        throw error
+      }
+      
+      if (data?.user) {
+        console.log('Login successful, navigating to dashboard')
+        navigate('/')
+      } else {
+        console.warn('No user in response:', data)
+        setError('Login failed - no user data received')
+      }
     } catch (error) {
-      setError(error.message || 'Failed to sign in')
+      console.error('Login catch block:', error)
+      // Provide more helpful error messages
+      let errorMessage = error.message || 'Failed to sign in'
+      
+      // Log full error for debugging
+      console.error('Full error details:', {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        error: error
+      })
+      
+      if (errorMessage.includes('Invalid login credentials') || errorMessage.includes('invalid_grant')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+      } else if (errorMessage.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account before signing in.'
+      } else if (errorMessage.includes('Email rate limit')) {
+        errorMessage = 'Too many attempts. Please try again later.'
+      } else if (errorMessage.includes('422')) {
+        errorMessage = `Authentication error (422). Please check: 1) User exists in Supabase, 2) Email is confirmed, 3) Credentials are correct. Error: ${errorMessage}`
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

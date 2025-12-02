@@ -31,11 +31,29 @@ const Signup = () => {
     setLoading(true)
 
     try {
-      const { error } = await signUp(email, password)
+      const { data, error } = await signUp(email, password)
       if (error) throw error
+      
+      // Check if email confirmation is required
+      if (data?.user && !data.session) {
+        setError('Please check your email to confirm your account before signing in.')
+        return
+      }
+      
       navigate('/')
     } catch (error) {
-      setError(error.message || 'Failed to sign up')
+      // Provide more helpful error messages
+      let errorMessage = error.message || 'Failed to sign up'
+      
+      if (errorMessage.includes('User already registered')) {
+        errorMessage = 'This email is already registered. Try signing in instead.'
+      } else if (errorMessage.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.'
+      } else if (errorMessage.includes('Password')) {
+        errorMessage = 'Password must be at least 6 characters long.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

@@ -37,22 +37,77 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const signUp = async (email, password, metadata = {}) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-      },
-    })
-    return { data, error }
+    try {
+      console.log('🔵 Sign up attempt:', { email: email.trim().toLowerCase() })
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      })
+      
+      console.log('🔵 Sign up response:', { 
+        hasData: !!data, 
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        hasError: !!error 
+      })
+      
+      if (error) {
+        console.error('🔴 Sign up error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          fullError: error
+        })
+        
+        // Try to get more details from the error
+        if (error.message) {
+          console.error('Error message:', error.message)
+        }
+        if (error.status) {
+          console.error('Error status:', error.status)
+        }
+        
+        return { data: null, error }
+      }
+      
+      console.log('✅ Sign up successful')
+      return { data, error: null }
+    } catch (err) {
+      console.error('🔴 Sign up exception:', err)
+      return { data: null, error: err }
+    }
   }
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { data, error }
+    try {
+      console.log('Attempting sign in with email:', email)
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      })
+      
+      if (error) {
+        console.error('Sign in error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          fullError: error
+        })
+        return { data: null, error }
+      }
+      
+      console.log('Sign in successful:', data)
+      return { data, error: null }
+    } catch (err) {
+      console.error('Sign in exception:', err)
+      return { data: null, error: err }
+    }
   }
 
   const signOut = async () => {
