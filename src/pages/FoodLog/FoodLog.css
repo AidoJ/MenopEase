@@ -73,7 +73,7 @@
 .added-item {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 10px;
@@ -83,6 +83,7 @@
 
 .added-item .food-info {
   width: 100%;
+  order: 1;
 }
 
 .added-item .food-info .name {
@@ -91,10 +92,28 @@
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  word-break: break-word;
 }
 
 .added-item .food-info .category {
   font-size: 11px;
+  color: var(--muted);
+}
+
+.added-item .food-quantity-inputs {
+  order: 2;
+  width: 100%;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+}
+
+.added-item .remove-btn {
+  order: 3;
+  width: 100%;
+  margin-top: 0;
 }
 
 @media (min-width: 480px) {
@@ -102,11 +121,25 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
   }
   
   .added-item .food-info {
     flex: 1;
     min-width: 0;
+    order: 1;
+  }
+  
+  .added-item .food-quantity-inputs {
+    flex: 1;
+    margin: 0 8px;
+    width: auto;
+    order: 2;
+  }
+  
+  .added-item .remove-btn {
+    width: auto;
+    order: 3;
   }
 }
 
@@ -114,21 +147,16 @@
   background: #f44336;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
-  margin-top: 4px;
 }
 
-@media (min-width: 480px) {
-  .remove-btn {
-    width: auto;
-    margin-top: 0;
-  }
+.remove-btn:hover {
+  background: #d32f2f;
 }
 
 .remove-btn:hover {
@@ -196,20 +224,7 @@
   text-transform: uppercase;
 }
 
-.food-quantity-inputs {
-  display: flex;
-  gap: 6px;
-  width: 100%;
-  margin: 0;
-}
-
-@media (min-width: 480px) {
-  .food-quantity-inputs {
-    flex: 1;
-    margin: 0 8px;
-    width: auto;
-  }
-}
+/* Moved to .added-item section above */
 
 .quantity-amount-input {
   flex: 1;
