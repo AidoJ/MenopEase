@@ -32,13 +32,22 @@ const Profile = () => {
     setLoading(true)
     setError('')
     try {
-      const { tier, profile: profileData, error } = await userService.getSubscriptionTier(user.id)
+      // Try direct profile fetch first
+      const { data: profileData, error: profileError } = await userService.getProfile(user.id)
       
-      // Only throw error if it's a real error (not just "no profile exists")
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading profile:', error)
-        setError('Failed to load profile')
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error loading profile:', profileError)
+        setError(`Failed to load profile: ${profileError.message || 'Unknown error'}`)
+        setLoading(false)
         return
+      }
+      
+      // Get subscription tier
+      const { tier, error: tierError } = await userService.getSubscriptionTier(user.id)
+      
+      if (tierError && tierError.code !== 'PGRST116') {
+        console.warn('Error loading subscription tier:', tierError)
+        // Don't fail the whole load for tier errors
       }
       
       setSubscriptionTier(tier)
@@ -53,11 +62,21 @@ const Profile = () => {
           date_of_birth: profileData.date_of_birth || '',
           stage: profileData.stage || '',
         })
+      } else {
+        // If no profile exists, initialize with defaults
+        setProfile({
+          first_name: '',
+          last_name: '',
+          phone: '',
+          country: '',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          date_of_birth: '',
+          stage: '',
+        })
       }
-      // If no profile exists, form will be empty and user can fill it in
     } catch (err) {
       console.error('Error loading profile:', err)
-      setError('Failed to load profile')
+      setError(`Failed to load profile: ${err.message || 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -75,34 +94,51 @@ const Profile = () => {
       const profileData = {
         user_id: user.id,
         email: user.email,
-        first_name: profile.first_name || null,
-        last_name: profile.last_name || null,
-        phone: profile.phone || null,
-        country: profile.country || null,
-        timezone: profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+        first_name: profile.first_name?.trim() || null,
+        last_name: profile.last_name?.trim() || null,
+        phone: profile.phone?.trim() || null,
+        country: profile.country?.trim() || null,
+        timezone: profile.timezone?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone,
         date_of_birth: profile.date_of_birth || null,
         stage: profile.stage || null,
       }
 
       // Check if profile exists
-      const { data: existing } = await userService.getProfile(user.id)
+      const { data: existing, error: checkError } = await userService.getProfile(user.id)
       
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking profile:', checkError)
+        throw new Error(`Failed to check profile: ${checkError.message}`)
+      }
+      
+      let result
       if (existing) {
-        // Update existing profile
-        const { error } = await userService.updateProfile(user.id, profileData)
-        if (error) throw error
+        // Update existing profile - remove user_id and email from update (they're in WHERE clause)
+        const { user_id, email, ...updateData } = profileData
+        const { data, error } = await userService.updateProfile(user.id, updateData)
+        if (error) {
+          console.error('Update error details:', error)
+          throw new Error(`Failed to update profile: ${error.message || JSON.stringify(error)}`)
+        }
+        result = data
       } else {
         // Create new profile
         const { data, error } = await userService.createProfile(profileData)
-        if (error) throw error
-        if (data) setProfile({ ...profile, ...data })
+        if (error) {
+          console.error('Create error details:', error)
+          throw new Error(`Failed to create profile: ${error.message || JSON.stringify(error)}`)
+        }
+        result = data
       }
 
+      // Reload profile to ensure we have the latest data
+      await loadProfile()
+      
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
       console.error('Error saving profile:', err)
-      setError(err.message || 'Failed to save profile')
+      setError(err.message || 'Failed to save profile. Please check console for details.')
     } finally {
       setSaving(false)
     }

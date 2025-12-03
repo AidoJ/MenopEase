@@ -21,12 +21,22 @@ export const userService = {
   },
 
   async updateProfile(userId, updates) {
+    // Remove null/undefined values to avoid overwriting with null
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== null && v !== undefined)
+    )
+    
     const { data, error } = await supabase
       .from('user_profiles')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('user_id', userId)
       .select()
-      .single()
+      .maybeSingle() // Use maybeSingle in case update affects 0 rows (shouldn't happen but safer)
+    
+    if (error) {
+      console.error('Supabase update error:', error)
+    }
+    
     return { data, error }
   },
 
