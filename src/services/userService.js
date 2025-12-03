@@ -7,7 +7,7 @@ export const userService = {
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle() // Use maybeSingle() instead of single() to avoid error when no row exists
     return { data, error }
   },
 
@@ -32,7 +32,10 @@ export const userService = {
 
   async getSubscriptionTier(userId) {
     const { data, error } = await this.getProfile(userId)
-    if (error) return { tier: 'free', error }
+    if (error && error.code !== 'PGRST116') {
+      // Only return error if it's not a "no rows" error
+      return { tier: { tier_code: 'free', tier_name: 'Free' }, profile: null, error }
+    }
     
     const tierCode = data?.subscription_tier || 'free'
     
@@ -41,10 +44,10 @@ export const userService = {
       .from('subscription_tiers')
       .select('*')
       .eq('tier_code', tierCode)
-      .single()
+      .maybeSingle() // Use maybeSingle() to handle missing tiers gracefully
     
     return { 
-      tier: tierData || { tier_code: 'free', tier_name: 'Free' }, 
+      tier: tierData || { tier_code: 'free', tier_name: 'Free', price_monthly: 0, max_reminders_per_day: 0, features: {} }, 
       profile: data,
       error: tierError 
     }

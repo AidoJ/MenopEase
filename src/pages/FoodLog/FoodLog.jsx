@@ -26,6 +26,8 @@ const FoodLog = () => {
   const [selectedFoods, setSelectedFoods] = useState([])
   const [mealType, setMealType] = useState('Breakfast')
   const [postMealSymptoms, setPostMealSymptoms] = useState([])
+  const [customFoodName, setCustomFoodName] = useState('')
+  const [showCustomFoodInput, setShowCustomFoodInput] = useState(false)
 
   const postMealSymptomOptions = [
     { value: 'Hot Flash', emoji: '🔥', label: 'Hot Flash' },
@@ -41,6 +43,11 @@ const FoodLog = () => {
   useEffect(() => {
     loadTodayMeals()
   }, [selectedDate])
+
+  // Reset search when meal type changes
+  useEffect(() => {
+    setSearchTerm('')
+  }, [mealType])
 
   const loadFoodItems = async () => {
     try {
@@ -69,14 +76,58 @@ const FoodLog = () => {
     }
   }
 
-  const filteredFoods = foodItems.filter(food =>
-    food.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filter foods by meal type category and search term
+  const getCategoryForMealType = (mealType) => {
+    const categoryMap = {
+      'Breakfast': 'Breakfast',
+      'Lunch': 'Lunch',
+      'Dinner': 'Dinner',
+      'Snack': 'Snack',
+    }
+    return categoryMap[mealType] || null
+  }
+
+  const filteredFoods = foodItems.filter(food => {
+    const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const mealCategory = getCategoryForMealType(mealType)
+    const matchesCategory = !mealCategory || food.category === mealCategory
+    return matchesSearch && matchesCategory
+  })
 
   const addFood = (food) => {
     if (!selectedFoods.find(f => f.id === food.id)) {
-      setSelectedFoods([...selectedFoods, food])
+      setSelectedFoods([...selectedFoods, { ...food, quantity: '' }])
     }
+  }
+
+  const addCustomFood = () => {
+    if (!customFoodName.trim()) {
+      setError('Please enter a food name')
+      return
+    }
+
+    const customFood = {
+      id: `custom-${Date.now()}`,
+      name: customFoodName.trim(),
+      category: getCategoryForMealType(mealType) || 'Other',
+      isCustom: true,
+      quantity: ''
+    }
+
+    if (!selectedFoods.find(f => f.id === customFood.id && f.name.toLowerCase() === customFood.name.toLowerCase())) {
+      setSelectedFoods([...selectedFoods, customFood])
+      setCustomFoodName('')
+      setShowCustomFoodInput(false)
+      setError('')
+    } else {
+      setError('This food is already added')
+    }
+  }
+
+  const updateFoodQuantity = (foodId, quantity) => {
+    setSelectedFoods(selectedFoods.map(f => 
+      f.id === foodId ? { ...f, quantity: quantity } : f
+    ))
   }
 
   const removeFood = (foodId) => {
@@ -109,7 +160,13 @@ const FoodLog = () => {
         user_id: user.id,
         date: selectedDate,
         meal_type: mealType,
-        foods: selectedFoods.map(f => ({ id: f.id, name: f.name, category: f.category })),
+        foods: selectedFoods.map(f => ({ 
+          id: f.id, 
+          name: f.name, 
+          category: f.category,
+          quantity: f.quantity || null,
+          isCustom: f.isCustom || false
+        })),
         post_meal_symptoms: postMealSymptoms,
       }
 
@@ -138,7 +195,9 @@ const FoodLog = () => {
       const foods = meal.foods.map(f => ({
         id: f.id || f.name,
         name: f.name,
-        category: f.category
+        category: f.category,
+        quantity: f.quantity || '',
+        isCustom: f.isCustom || false
       }))
       setSelectedFoods(foods)
     }
@@ -240,7 +299,7 @@ const FoodLog = () => {
                   <div className="meal-foods">
                     {meal.foods?.map((food, idx) => (
                       <span key={idx} className="food-tag">
-                        {food.name}
+                        {food.name}{food.quantity && ` (${food.quantity})`}
                       </span>
                     ))}
                   </div>
@@ -307,10 +366,13 @@ const FoodLog = () => {
 
           <div className="form-group">
             <div className="form-label">Add Food Items</div>
+            <div className="food-filter-hint">
+              Showing {mealType} foods {searchTerm && `matching "${searchTerm}"`}
+            </div>
             <input
               type="text"
               className="food-search"
-              placeholder="Search: chicken, bread, milk, cheese..."
+              placeholder={`Search ${mealType.toLowerCase()} foods...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -333,8 +395,74 @@ const FoodLog = () => {
                 </button>
               </div>
             ))}
-            {filteredFoods.length === 0 && (
-              <div className="no-results">No foods found matching "{searchTerm}"</div>
+            {filteredFoods.length === 0 && searchTerm && (
+              <div className="no-results">
+                No foods found matching "{searchTerm}"
+                <button
+                  type="button"
+                  className="add-custom-btn"
+                  onClick={() => setShowCustomFoodInput(true)}
+                  style={{ marginTop: '10px', display: 'block', width: '100%' }}
+                >
+                  Add "{searchTerm}" as custom food
+                </button>
+              </div>
+            )}
+            {filteredFoods.length === 0 && !searchTerm && (
+              <div className="no-results">No foods available for {mealType}</div>
+            )}
+          </div>
+
+          <div className="form-group">
+            <div className="form-label">Or Add Custom Food</div>
+            {!showCustomFoodInput ? (
+              <button
+                type="button"
+                className="add-custom-btn"
+                onClick={() => setShowCustomFoodInput(true)}
+              >
+                + Add Custom Food Item
+              </button>
+            ) : (
+              <div className="custom-food-input">
+                <div className="spelling-warning">
+                  ⚠️ Please ensure you spell the item correctly
+                </div>
+                <input
+                  type="text"
+                  className="food-search"
+                  placeholder="Enter food name (e.g., eggs, cereal, chicken breast)"
+                  value={customFoodName}
+                  onChange={(e) => setCustomFoodName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addCustomFood()
+                    }
+                  }}
+                />
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <Button
+                    type="button"
+                    variant="teal"
+                    onClick={addCustomFood}
+                    style={{ flex: 1 }}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setShowCustomFoodInput(false)
+                      setCustomFoodName('')
+                    }}
+                    style={{ flex: 1 }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
 
@@ -344,8 +472,20 @@ const FoodLog = () => {
               {selectedFoods.map((food) => (
                 <div key={food.id} className="added-item">
                   <div className="food-info">
-                    <div className="name">{food.name}</div>
+                    <div className="name">
+                      {food.name}
+                      {food.isCustom && <span className="custom-badge">Custom</span>}
+                    </div>
                     <div className="category">{food.category}</div>
+                  </div>
+                  <div className="food-quantity-input">
+                    <input
+                      type="text"
+                      className="quantity-input"
+                      placeholder="e.g., 2, 100g, 1 cup"
+                      value={food.quantity || ''}
+                      onChange={(e) => updateFoodQuantity(food.id, e.target.value)}
+                    />
                   </div>
                   <button
                     type="button"

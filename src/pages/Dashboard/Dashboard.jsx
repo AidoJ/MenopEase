@@ -69,7 +69,7 @@ const Dashboard = () => {
           `2000-01-01T${sleepData.data.bedtime}:00`,
           `2000-01-01T${sleepData.data.wake_time}:00`
         )
-        if (duration) {
+        if (duration && !isNaN(duration.hours) && !isNaN(duration.minutes)) {
           sleepDisplay = `${duration.hours}h ${duration.minutes}m`
         }
       }

@@ -30,11 +30,19 @@ const Profile = () => {
     if (!user) return
     
     setLoading(true)
+    setError('')
     try {
       const { tier, profile: profileData, error } = await userService.getSubscriptionTier(user.id)
-      if (error) throw error
+      
+      // Only throw error if it's a real error (not just "no profile exists")
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error)
+        setError('Failed to load profile')
+        return
+      }
       
       setSubscriptionTier(tier)
+      
       if (profileData) {
         setProfile({
           first_name: profileData.first_name || '',
@@ -45,15 +53,8 @@ const Profile = () => {
           date_of_birth: profileData.date_of_birth || '',
           stage: profileData.stage || '',
         })
-      } else {
-        // Create profile if it doesn't exist
-        const { data: newProfile } = await userService.createProfile({
-          user_id: user.id,
-          email: user.email,
-          ...profile,
-        })
-        if (newProfile) setProfile(newProfile)
       }
+      // If no profile exists, form will be empty and user can fill it in
     } catch (err) {
       console.error('Error loading profile:', err)
       setError('Failed to load profile')
@@ -71,19 +72,37 @@ const Profile = () => {
     setSuccess(false)
 
     try {
-      const updates = {
+      const profileData = {
+        user_id: user.id,
         email: user.email,
-        ...profile,
+        first_name: profile.first_name || null,
+        last_name: profile.last_name || null,
+        phone: profile.phone || null,
+        country: profile.country || null,
+        timezone: profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+        date_of_birth: profile.date_of_birth || null,
+        stage: profile.stage || null,
       }
 
-      const { error } = await userService.updateProfile(user.id, updates)
-      if (error) throw error
+      // Check if profile exists
+      const { data: existing } = await userService.getProfile(user.id)
+      
+      if (existing) {
+        // Update existing profile
+        const { error } = await userService.updateProfile(user.id, profileData)
+        if (error) throw error
+      } else {
+        // Create new profile
+        const { data, error } = await userService.createProfile(profileData)
+        if (error) throw error
+        if (data) setProfile({ ...profile, ...data })
+      }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
-      setError(err.message || 'Failed to save profile')
       console.error('Error saving profile:', err)
+      setError(err.message || 'Failed to save profile')
     } finally {
       setSaving(false)
     }

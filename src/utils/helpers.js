@@ -31,20 +31,36 @@ export const calculateSleepDuration = (bedtime, wakeTime) => {
     const bed = new Date(bedtime)
     const wake = new Date(wakeTime)
     
+    // Validate dates
+    if (isNaN(bed.getTime()) || isNaN(wake.getTime())) {
+      return null
+    }
+    
     // Handle overnight sleep (wake time next day)
     if (wake < bed) {
       wake.setDate(wake.getDate() + 1)
     }
     
     const diffMs = wake - bed
+    if (diffMs < 0) return null // Invalid time range
+    
     const hours = diffMs / (1000 * 60 * 60)
     
+    const hoursInt = Math.floor(hours)
+    const minutesInt = Math.floor((hours % 1) * 60)
+    
+    // Validate results
+    if (isNaN(hoursInt) || isNaN(minutesInt) || hoursInt < 0 || minutesInt < 0) {
+      return null
+    }
+    
     return {
-      hours: Math.floor(hours),
-      minutes: Math.floor((hours % 1) * 60),
+      hours: hoursInt,
+      minutes: minutesInt,
       totalHours: hours.toFixed(1),
     }
   } catch (error) {
+    console.error('Error calculating sleep duration:', error)
     return null
   }
 }
