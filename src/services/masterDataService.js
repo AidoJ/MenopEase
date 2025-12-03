@@ -1,11 +1,18 @@
 import { supabase } from '../config/supabase'
 
 // Fetch all medications from master table
-export const getMedicationsMaster = async () => {
-  const { data, error } = await supabase
+export const getMedicationsMaster = async (category = null) => {
+  let query = supabase
     .from('medications_master')
     .select('*')
-    .order('name', { ascending: true })
+  
+  if (category) {
+    query = query.eq('category', category)
+  }
+  
+  query = query.order('name', { ascending: true })
+  
+  const { data, error } = await query
   
   if (error) {
     console.error('Error fetching medications master:', error)
@@ -13,6 +20,22 @@ export const getMedicationsMaster = async () => {
   }
   
   return { data, error: null }
+}
+
+// Fetch all unique categories from medications master
+export const getMedicationCategories = async () => {
+  const { data, error } = await supabase
+    .from('medications_master')
+    .select('category')
+  
+  if (error) {
+    console.error('Error fetching medication categories:', error)
+    return { data: [], error }
+  }
+  
+  // Get unique categories
+  const uniqueCategories = [...new Set(data.map(item => item.category).filter(Boolean))]
+  return { data: uniqueCategories.sort(), error: null }
 }
 
 // Fetch all vitamins/supplements from master table

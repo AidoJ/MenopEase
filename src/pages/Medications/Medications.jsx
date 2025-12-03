@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { medicationService } from '../../services/supabaseService'
-import { getMedicationsMaster, getVitaminsMaster } from '../../services/masterDataService'
+import { getMedicationsMaster, getMedicationCategories } from '../../services/masterDataService'
 import Card from '../../components/UI/Card'
 import Button from '../../components/UI/Button'
 import { getTodayDate } from '../../utils/helpers'
@@ -17,18 +17,34 @@ const Medications = () => {
   
   const [medications, setMedications] = useState([])
   const [medicationsMaster, setMedicationsMaster] = useState([])
-  const [vitaminsMaster, setVitaminsMaster] = useState([])
+  const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('Prescription Medications (Hormonal)')
   const [todayLogs, setTodayLogs] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [newMedName, setNewMedName] = useState('')
   const [selectedMasterMed, setSelectedMasterMed] = useState('')
   const [useCustomName, setUseCustomName] = useState(false)
+  const [newMedCategory, setNewMedCategory] = useState('Prescription Medications (Hormonal)')
   const [newMedType, setNewMedType] = useState('medication')
   const [newMedSchedule, setNewMedSchedule] = useState({ time: '08:00', frequency: 'daily' })
 
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    // Reload medications when category changes
+    const loadMedsByCategory = async () => {
+      if (!user) return
+      try {
+        const { data } = await getMedicationsMaster(selectedCategory)
+        setMedicationsMaster(data || [])
+      } catch (err) {
+        console.error('Error loading medications by category:', err)
+      }
+    }
+    loadMedsByCategory()
+  }, [selectedCategory, user])
 
   const loadData = async () => {
     if (!user) return
@@ -40,13 +56,13 @@ const Medications = () => {
       if (medsError) throw medsError
       setMedications(meds || [])
 
-      // Load master lists
-      const [medsMaster, vitsMaster] = await Promise.all([
-        getMedicationsMaster(),
-        getVitaminsMaster(),
+      // Load categories and medications
+      const [catsData, medsMaster] = await Promise.all([
+        getMedicationCategories(),
+        getMedicationsMaster(selectedCategory),
       ])
+      setCategories(catsData.data || [])
       setMedicationsMaster(medsMaster.data || [])
-      setVitaminsMaster(vitsMaster.data || [])
 
       // Load today's medication logs
       const today = getTodayDate()
@@ -118,10 +134,15 @@ const Medications = () => {
     setError('')
     
     try {
+      // Get category from master med if selected, otherwise use custom category
+      const masterMed = medicationsMaster.find(m => m.name === medName)
+      const medCategory = masterMed?.category || newMedCategory
+      
       const medData = {
         user_id: user.id,
         name: medName,
         type: newMedType,
+        category: medCategory,
         schedule: newMedSchedule,
       }
 
@@ -133,6 +154,7 @@ const Medications = () => {
       setNewMedName('')
       setSelectedMasterMed('')
       setUseCustomName(false)
+      setNewMedCategory(selectedCategory)
       setNewMedSchedule({ time: '08:00', frequency: 'daily' })
       setTimeout(() => setSuccess(false), 2000)
       
@@ -181,7 +203,7 @@ const Medications = () => {
   if (loading) {
     return (
       <div className="medications">
-        <div className="page-title">Medications & Therapies</div>
+        <div className="page-title">Medications/Supplements</div>
         <Card>
           <p>Loading...</p>
         </Card>
@@ -191,17 +213,33 @@ const Medications = () => {
 
   return (
     <div className="medications">
-      <div className="page-title">Medications & Therapies</div>
+      <div className="page-title">Medications/Supplements</div>
 
       <Card>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <div className="card-title">Add Medication/Supplement</div>
+        <div className="form-group">
+          <label>Category</label>
+          <select
+            className="form-select"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
           <Button
             type="button"
             variant="teal"
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setNewMedCategory(selectedCategory)
+              setShowAddModal(true)
+            }}
             style={{ flex: 1, padding: '12px', fontSize: '14px' }}
           >
-            Add Medication
+            Add from {selectedCategory}
           </Button>
         </div>
 
@@ -231,10 +269,13 @@ const Medications = () => {
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Add Medication</h3>
+            <h3>Add Medication/Supplement</h3>
             <form onSubmit={handleAddMedication}>
               <div className="form-group">
-                <label>Select from Common Medications</label>
+                <label>Category: {newMedCategory}</label>
+              </div>
+              <div className="form-group">
+                <label>Select from {newMedCategory}</label>
                 <select
                   className="form-select"
                   value={selectedMasterMed}
@@ -280,17 +321,31 @@ const Medications = () => {
                     }}
                     style={{ marginRight: '8px' }}
                   />
-                  Enter Custom Medication Name
+                  Enter Custom Name
                 </label>
                 {useCustomName && (
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={newMedName}
-                    onChange={(e) => setNewMedName(e.target.value)}
-                    placeholder="e.g., Custom Medication Name"
-                    style={{ marginTop: '8px' }}
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={newMedName}
+                      onChange={(e) => setNewMedName(e.target.value)}
+                      placeholder="e.g., Custom Medication Name"
+                      style={{ marginTop: '8px' }}
+                    />
+                    <div className="form-group" style={{ marginTop: '8px' }}>
+                      <label>Category</label>
+                      <select
+                        className="form-select"
+                        value={newMedCategory}
+                        onChange={(e) => setNewMedCategory(e.target.value)}
+                      >
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 )}
               </div>
               
