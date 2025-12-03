@@ -23,13 +23,15 @@ const Dashboard = () => {
   const [completion, setCompletion] = useState(0)
   const [recentHistory, setRecentHistory] = useState([])
 
+  const [quickWater, setQuickWater] = useState(0)
+  const [quickEnergy, setQuickEnergy] = useState(5)
+  const [savingQuick, setSavingQuick] = useState(false)
+
   const quickActions = [
     { icon: '🌙', label: 'Sleep', path: '/sleep' },
     { icon: '🍽️', label: 'Food', path: '/food' },
-    { icon: '📋', label: 'Symptoms', path: '/symptoms' },
-    { icon: '💊', label: 'Medications', path: '/medications' },
+    { icon: '💊', label: 'Meds', path: '/medications' },
     { icon: '🏃', label: 'Exercise', path: '/exercise' },
-    { icon: '💆', label: 'Mood', path: '/mood' },
     { icon: '🌤️', label: 'Weather', path: '/mood' },
     { icon: '📝', label: 'Journal', path: '/journal' },
   ]
@@ -98,12 +100,14 @@ const Dashboard = () => {
                            energyValue <= 9 ? '😊' : 
                            energyValue === 10 ? '⚡' : '🚀'
         energyDisplay = `${energyEmoji} ${energyValue}/11`
+        setQuickEnergy(energyValue)
       }
 
       // Get hydration
       let waterDisplay = '--'
       if (moodData.data && moodData.data.hydration_liters) {
         waterDisplay = `${moodData.data.hydration_liters.toFixed(1)}L`
+        setQuickWater(moodData.data.hydration_liters)
       }
 
       // Count meals
@@ -224,13 +228,69 @@ const Dashboard = () => {
         break
       case 'energy':
       case 'water':
-        navigate(`/mood?date=${today}`)
+        navigate(`/track?tab=mood&date=${today}`)
         break
       case 'meals':
         navigate(`/food?date=${today}`)
         break
       default:
         break
+    }
+  }
+
+  const handleQuickSave = async (type, value) => {
+    if (!user) return
+    setSavingQuick(true)
+    try {
+      const today = getTodayDate()
+      if (type === 'water') {
+        const { data: existing } = await supabase
+          .from('mood_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .maybeSingle()
+        
+        const updateData = {
+          user_id: user.id,
+          date: today,
+          hydration_liters: value,
+          ...(existing ? {} : { energy_level: quickEnergy })
+        }
+        
+        if (existing) {
+          await supabase.from('mood_logs').update(updateData).eq('id', existing.id)
+        } else {
+          await supabase.from('mood_logs').insert([updateData])
+        }
+        setStats(prev => ({ ...prev, water: `${value.toFixed(1)}L` }))
+      } else if (type === 'energy') {
+        const { data: existing } = await supabase
+          .from('mood_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .maybeSingle()
+        
+        const updateData = {
+          user_id: user.id,
+          date: today,
+          energy_level: value,
+          ...(existing ? {} : { hydration_liters: quickWater || 1.8 })
+        }
+        
+        if (existing) {
+          await supabase.from('mood_logs').update(updateData).eq('id', existing.id)
+        } else {
+          await supabase.from('mood_logs').insert([updateData])
+        }
+        const energyEmoji = value <= 1 ? '😴' : value <= 3 ? '😐' : value <= 5 ? '😑' : value <= 7 ? '🙂' : value <= 9 ? '😊' : value === 10 ? '⚡' : '🚀'
+        setStats(prev => ({ ...prev, energy: `${energyEmoji} ${value}/11` }))
+      }
+    } catch (err) {
+      console.error('Error saving quick input:', err)
+    } finally {
+      setSavingQuick(false)
     }
   }
 
@@ -268,7 +328,7 @@ const Dashboard = () => {
             title="Click to view mood & energy"
           >
             <span className="stat-value">{stats.energy}</span>
-            <span className="stat-label">Energy</span>
+            <span className="stat-label">Energy/Mood</span>
           </div>
           <div 
             className="stat-card teal clickable"
@@ -326,6 +386,13 @@ const Dashboard = () => {
               <div className="label">{action.label}</div>
             </div>
           ))}
+          <div
+            className="quick-btn"
+            onClick={() => navigate('/track')}
+          >
+            <div className="icon">📊</div>
+            <div className="label">Track</div>
+          </div>
         </div>
       </Card>
 

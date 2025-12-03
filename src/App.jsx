@@ -11,6 +11,7 @@ import Exercise from './pages/Exercise/Exercise'
 import MoodWellness from './pages/MoodWellness/MoodWellness'
 import Journal from './pages/Journal/Journal'
 import Insights from './pages/Insights/Insights'
+import Track from './pages/Track/Track'
 import Profile from './pages/Profile/Profile'
 import Login from './pages/Auth/Login'
 import Signup from './pages/Auth/Signup'
@@ -39,6 +40,7 @@ function App() {
               <Route path="medications" element={<Medications />} />
               <Route path="exercise" element={<Exercise />} />
               <Route path="mood" element={<MoodWellness />} />
+              <Route path="track" element={<Track />} />
               <Route path="journal" element={<Journal />} />
               <Route path="insights" element={<Insights />} />
               <Route path="profile" element={<Profile />} />

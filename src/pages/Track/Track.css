@@ -1,0 +1,51 @@
+.track-page {
+  padding-bottom: 20px;
+}
+
+.track-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-bottom: 2px solid rgba(123, 91, 216, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.track-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  border: none;
+  background: rgba(123, 91, 216, 0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.track-tab:hover {
+  background: rgba(123, 91, 216, 0.1);
+}
+
+.track-tab.active {
+  background: var(--purple);
+  color: white;
+}
+
+.track-tab .tab-icon {
+  font-size: 24px;
+}
+
+.track-tab .tab-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.track-content {
+  margin-top: 0;
+}
+
