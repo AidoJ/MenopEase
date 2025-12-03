@@ -72,9 +72,8 @@
 
 .added-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 10px;
@@ -83,8 +82,7 @@
 }
 
 .added-item .food-info {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 .added-item .food-info .name {
@@ -92,6 +90,24 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
+  margin-bottom: 4px;
+}
+
+.added-item .food-info .category {
+  font-size: 11px;
+}
+
+@media (min-width: 480px) {
+  .added-item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .added-item .food-info {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .remove-btn {
@@ -104,6 +120,15 @@
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
+  margin-top: 4px;
+}
+
+@media (min-width: 480px) {
+  .remove-btn {
+    width: auto;
+    margin-top: 0;
+  }
 }
 
 .remove-btn:hover {
@@ -174,8 +199,16 @@
 .food-quantity-inputs {
   display: flex;
   gap: 6px;
-  flex: 1;
-  margin: 0 8px;
+  width: 100%;
+  margin: 0;
+}
+
+@media (min-width: 480px) {
+  .food-quantity-inputs {
+    flex: 1;
+    margin: 0 8px;
+    width: auto;
+  }
 }
 
 .quantity-amount-input {
@@ -198,13 +231,20 @@
 }
 
 .quantity-unit-select {
-  min-width: 120px;
+  min-width: 100px;
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid rgba(123, 91, 216, 0.2);
   font-size: 13px;
   background: white;
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
+  .quantity-unit-select {
+    min-width: 120px;
+  }
 }
 
 .quantity-unit-select:focus {
