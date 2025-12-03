@@ -93,7 +93,6 @@ export const reminderService = {
       .from('reminders')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true)
       .order('time', { ascending: true })
     return { data, error }
   },

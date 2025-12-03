@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { userService } from '../../services/userService'
 import Card from '../../components/UI/Card'
@@ -7,6 +8,7 @@ import './Profile.css'
 
 const Profile = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -299,9 +301,25 @@ const Profile = () => {
                 </span>
               </div>
             </div>
-            <Button variant="teal" style={{ marginTop: '16px' }}>
-              Manage Subscription
-            </Button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+              <Button variant="teal" style={{ flex: 1 }}>
+                Manage Subscription
+              </Button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/settings/communication')}
+                >
+                  Communication Settings
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/reminders')}
+                >
+                  Manage Reminders
+                </Button>
+              </div>
+            </div>
           </div>
         </Card>
       )}

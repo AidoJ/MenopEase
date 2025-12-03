@@ -106,7 +106,8 @@
   order: 2;
   width: 100%;
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
   margin: 0;
 }
 
@@ -132,9 +133,11 @@
   
   .added-item .food-quantity-inputs {
     flex: 1;
+    flex-direction: row;
     margin: 0 8px;
     width: auto;
     order: 2;
+    gap: 6px;
   }
   
   .added-item .remove-btn {

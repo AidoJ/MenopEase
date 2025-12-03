@@ -13,6 +13,8 @@ import Journal from './pages/Journal/Journal'
 import Insights from './pages/Insights/Insights'
 import Track from './pages/Track/Track'
 import Profile from './pages/Profile/Profile'
+import CommunicationPreferences from './pages/Settings/CommunicationPreferences'
+import Reminders from './pages/Reminders/Reminders'
 import Login from './pages/Auth/Login'
 import Signup from './pages/Auth/Signup'
 import ProtectedRoute from './components/Auth/ProtectedRoute'
@@ -44,6 +46,8 @@ function App() {
               <Route path="journal" element={<Journal />} />
               <Route path="insights" element={<Insights />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="settings/communication" element={<CommunicationPreferences />} />
+              <Route path="reminders" element={<Reminders />} />
             </Route>
           </Routes>
         </Router>
