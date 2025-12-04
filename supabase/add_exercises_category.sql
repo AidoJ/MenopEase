@@ -8,3 +8,4 @@ COMMENT ON COLUMN exercises.category IS 'Category from exercises_master (e.g., E
 
 
 
+

@@ -49,13 +49,15 @@ These are the Template IDs you set when creating templates in EmailJS (must be �
 - `TWILIO_PHONE_NUMBER` - Your Twilio phone number (format: +1234567890)
   - Get from: Twilio Console → Phone Numbers → Manage → Active numbers
 
-### Stripe Configuration (for Subscriptions - Future)
+### Stripe Configuration (for Subscriptions)
 - `STRIPE_SECRET_KEY` - Your Stripe Secret Key (starts with `sk_`)
   - Get from: Stripe Dashboard → Developers → API keys
 - `STRIPE_PUBLISHABLE_KEY` - Your Stripe Publishable Key (starts with `pk_`)
   - Get from: Stripe Dashboard → Developers → API keys
 - `STRIPE_WEBHOOK_SECRET` - Webhook signing secret (for subscription events)
   - Get from: Stripe Dashboard → Developers → Webhooks → Add endpoint → Signing secret
+  - **IMPORTANT**: Add webhook endpoint: `https://your-site.netlify.app/.netlify/functions/stripe-webhook`
+  - Listen to events: `checkout.session.completed`, `customer.subscription.*`, `invoice.*`
 
 ---
 
@@ -110,6 +112,7 @@ To automatically process reminders and generate reports, you'll need to set up s
 3. For `generate-reports`: Set schedule to run daily at 5 PM (cron: `0 17 * * *`)
 
 Or use Netlify's Scheduled Functions feature (requires Netlify Pro plan) or external cron services.
+
 
 
 

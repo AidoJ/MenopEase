@@ -1,0 +1,211 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.energy_levels (
+  value integer NOT NULL,
+  label character varying NOT NULL,
+  mood character varying,
+  description text,
+  CONSTRAINT energy_levels_pkey PRIMARY KEY (value)
+);
+CREATE TABLE public.exercises (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  activity_type character varying,
+  duration integer,
+  intensity character varying,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  category character varying,
+  CONSTRAINT exercises_pkey PRIMARY KEY (id),
+  CONSTRAINT exercises_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.exercises_master (
+  id integer NOT NULL DEFAULT nextval('exercises_master_id_seq'::regclass),
+  name character varying NOT NULL,
+  intensity character varying,
+  category character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  description text,
+  CONSTRAINT exercises_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.food_items (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name character varying NOT NULL,
+  category character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT food_items_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.food_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  meal_type character varying,
+  foods jsonb,
+  post_meal_symptoms jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT food_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT food_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.insights (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  pattern_type character varying,
+  title character varying,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT insights_pkey PRIMARY KEY (id),
+  CONSTRAINT insights_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.journal_entries (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  content text NOT NULL,
+  mood_summary character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT journal_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT journal_entries_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.medication_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  medication_id uuid,
+  user_id uuid,
+  taken_at timestamp with time zone DEFAULT now(),
+  date date NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT medication_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT medication_logs_medication_id_fkey FOREIGN KEY (medication_id) REFERENCES public.medications(id),
+  CONSTRAINT medication_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.medications (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  name character varying NOT NULL,
+  schedule jsonb,
+  type character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  category character varying,
+  CONSTRAINT medications_pkey PRIMARY KEY (id),
+  CONSTRAINT medications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.medications_master (
+  id integer NOT NULL DEFAULT nextval('medications_master_id_seq'::regclass),
+  name character varying NOT NULL,
+  type character varying,
+  typical_dose character varying,
+  purpose text,
+  created_at timestamp with time zone DEFAULT now(),
+  category character varying,
+  CONSTRAINT medications_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.mood_levels (
+  value integer NOT NULL,
+  label character varying NOT NULL,
+  CONSTRAINT mood_levels_pkey PRIMARY KEY (value)
+);
+CREATE TABLE public.mood_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  energy_level integer,
+  mental_clarity jsonb,
+  emotional_state jsonb,
+  stress_management jsonb,
+  tension_zones jsonb,
+  hydration_liters numeric,
+  caffeine boolean DEFAULT false,
+  alcohol boolean DEFAULT false,
+  weather_impact jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT mood_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT mood_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.sleep_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  bedtime time without time zone,
+  wake_time time without time zone,
+  quality character varying,
+  night_sweats character varying,
+  disturbances text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT sleep_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT sleep_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.symptoms (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  date date NOT NULL,
+  physical_symptoms jsonb,
+  emotional_symptoms jsonb,
+  severity integer CHECK (severity >= 1 AND severity <= 10),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT symptoms_pkey PRIMARY KEY (id),
+  CONSTRAINT symptoms_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.symptoms_master (
+  id integer NOT NULL DEFAULT nextval('symptoms_master_id_seq'::regclass),
+  symptom character varying NOT NULL,
+  category character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT symptoms_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.therapies_master (
+  id integer NOT NULL DEFAULT nextval('therapies_master_id_seq'::regclass),
+  name character varying NOT NULL,
+  category character varying,
+  benefits text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT therapies_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.user_profiles (
+  user_id uuid NOT NULL,
+  email text UNIQUE,
+  first_name text,
+  last_name text,
+  phone text,
+  country text,
+  timezone text,
+  date_of_birth date,
+  stage text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id),
+  CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_settings (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid UNIQUE,
+  preferences jsonb DEFAULT '{}'::jsonb,
+  goals jsonb DEFAULT '{}'::jsonb,
+  notification_settings jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_settings_pkey PRIMARY KEY (id),
+  CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.vitamins_master (
+  id integer NOT NULL DEFAULT nextval('vitamins_master_id_seq'::regclass),
+  name character varying NOT NULL,
+  category character varying,
+  purpose text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT vitamins_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.weather_data (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  date date NOT NULL,
+  temperature numeric,
+  humidity integer,
+  pressure numeric,
+  conditions character varying,
+  location character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT weather_data_pkey PRIMARY KEY (id)
+);
