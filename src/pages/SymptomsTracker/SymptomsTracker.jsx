@@ -25,6 +25,7 @@ const SymptomsTracker = () => {
   const [selectedPhysical, setSelectedPhysical] = useState([])
   const [selectedEmotional, setSelectedEmotional] = useState([])
   const [severity, setSeverity] = useState(5)
+  const [notes, setNotes] = useState('')
 
   useEffect(() => {
     loadSymptomsMaster()
@@ -62,10 +63,12 @@ const SymptomsTracker = () => {
         setSelectedPhysical(data.physical_symptoms || [])
         setSelectedEmotional(data.emotional_symptoms || [])
         setSeverity(data.severity || 5)
+        setNotes(data.notes || '')
       } else {
         setSelectedPhysical([])
         setSelectedEmotional([])
         setSeverity(5)
+        setNotes('')
       }
     } catch (err) {
       console.error('Error loading symptoms:', err)
@@ -110,6 +113,7 @@ const SymptomsTracker = () => {
         physical_symptoms: selectedPhysical,
         emotional_symptoms: selectedEmotional,
         severity: severity,
+        notes: notes || null,
       }
 
       const { data: existing } = await symptomService.getByDate(selectedDate, user.id)
@@ -264,6 +268,19 @@ const SymptomsTracker = () => {
             <div className="severity-display">
               <span className="severity-value">{severity}</span> / 10
             </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="form-group">
+            <div className="form-label">Notes & Comments</div>
+            <textarea
+              className="form-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes about your symptoms: triggers, context, changes, what helped, etc."
+              rows="3"
+            />
           </div>
         </Card>
 

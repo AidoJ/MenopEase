@@ -25,6 +25,7 @@ const SleepLog = () => {
   const [wakeTime, setWakeTime] = useState('06:30')
   const [nightSweats, setNightSweats] = useState('none')
   const [disturbances, setDisturbances] = useState('')
+  const [notes, setNotes] = useState('')
 
   useEffect(() => {
     loadSleepData()
@@ -49,6 +50,7 @@ const SleepLog = () => {
         setWakeTime(data.wake_time || '06:30')
         setNightSweats(data.night_sweats || 'none')
         setDisturbances(data.disturbances || '')
+        setNotes(data.notes || '')
       } else {
         // Reset form if no data for this date
         setQuality('good')
@@ -56,6 +58,7 @@ const SleepLog = () => {
         setWakeTime('06:30')
         setNightSweats('none')
         setDisturbances('')
+        setNotes('')
       }
     } catch (err) {
       console.error('Error loading sleep log:', err)
@@ -109,6 +112,7 @@ const SleepLog = () => {
         quality: quality,
         night_sweats: nightSweats,
         disturbances: disturbances || null,
+        notes: notes || null,
       }
 
       // Check if entry exists for selected date
@@ -250,6 +254,17 @@ const SleepLog = () => {
               value={disturbances}
               onChange={(e) => setDisturbances(e.target.value)}
               placeholder="Note any issues: insomnia, waking up, restlessness..."
+            />
+          </div>
+
+          <div className="form-group">
+            <div className="form-label">Notes & Comments</div>
+            <textarea
+              className="form-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add any notes about your sleep: why quality changed, medication effects, lifestyle changes, etc."
+              rows="3"
             />
           </div>
 

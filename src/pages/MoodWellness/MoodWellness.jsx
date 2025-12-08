@@ -31,6 +31,7 @@ const MoodWellness = () => {
   const [alcohol, setAlcohol] = useState(false)
   const [weatherSymptoms, setWeatherSymptoms] = useState([])
   const [weatherNotes, setWeatherNotes] = useState('')
+  const [notes, setNotes] = useState('')
 
   useEffect(() => {
     loadTodayMood()
@@ -67,6 +68,7 @@ const MoodWellness = () => {
           setWeatherSymptoms(data.weather_impact.symptoms || [])
           setWeatherNotes(data.weather_impact.notes || '')
         }
+        setNotes(data.notes || '')
       } else {
         // Reset form if no data
         setEnergyLevel(5)
@@ -79,6 +81,7 @@ const MoodWellness = () => {
         setAlcohol(false)
         setWeatherSymptoms([])
         setWeatherNotes('')
+        setNotes('')
       }
     } catch (err) {
       console.error('Error loading mood log:', err)
@@ -134,6 +137,7 @@ const MoodWellness = () => {
           symptoms: weatherSymptoms,
           notes: weatherNotes,
         },
+        notes: notes || null,
       }
 
       // Check if entry exists
@@ -389,6 +393,19 @@ const MoodWellness = () => {
               value={weatherNotes}
               onChange={(e) => setWeatherNotes(e.target.value)}
               placeholder="How is the weather affecting your symptoms today?"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="form-group">
+            <div className="form-label">Notes & Comments</div>
+            <textarea
+              className="form-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes about your mood and wellness: why energy changed, what helped, lifestyle changes, etc."
+              rows="3"
             />
           </div>
         </Card>

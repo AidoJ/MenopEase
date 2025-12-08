@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { format, addDays, subDays, isToday, isSameDay, parseISO } from 'date-fns'
 import './DateNavigator.css'
 
@@ -10,6 +10,10 @@ const DateNavigator = ({
   showCalendar = true 
 }) => {
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const containerRef = useRef(null)
+  const touchStartX = useRef(null)
+  const touchStartY = useRef(null)
+  const swipeThreshold = 50 // Minimum distance for swipe
 
   const handlePrevDay = () => {
     const newDate = subDays(parseISO(selectedDate), 1)
@@ -36,13 +40,63 @@ const DateNavigator = ({
     setShowDatePicker(false)
   }
 
+  // Swipe gesture handlers
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const handleTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX
+      touchStartY.current = e.touches[0].clientY
+    }
+
+    const handleTouchEnd = (e) => {
+      if (touchStartX.current === null || touchStartY.current === null) return
+
+      const touchEndX = e.changedTouches[0].clientX
+      const touchEndY = e.changedTouches[0].clientY
+      const deltaX = touchEndX - touchStartX.current
+      const deltaY = touchEndY - touchStartY.current
+
+      // Check if horizontal swipe is more significant than vertical
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+        const selectedDateObj = parseISO(selectedDate)
+        
+        if (deltaX > 0) {
+          // Swipe right (left to right) = go back in time (previous day)
+          const newDate = subDays(selectedDateObj, 1)
+          if (!minDate || newDate >= parseISO(minDate)) {
+            onChange(format(newDate, 'yyyy-MM-dd'))
+          }
+        } else {
+          // Swipe left (right to left) = go forward in time (next day)
+          const newDate = addDays(selectedDateObj, 1)
+          if (!maxDate || newDate <= parseISO(maxDate)) {
+            onChange(format(newDate, 'yyyy-MM-dd'))
+          }
+        }
+      }
+
+      touchStartX.current = null
+      touchStartY.current = null
+    }
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true })
+    container.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [selectedDate, minDate, maxDate, onChange])
+
   const selectedDateObj = parseISO(selectedDate)
   const isSelectedToday = isToday(selectedDateObj)
   const canGoPrev = !minDate || selectedDateObj > parseISO(minDate)
   const canGoNext = !maxDate || selectedDateObj < parseISO(maxDate)
 
   return (
-    <div className="date-navigator">
+    <div className="date-navigator" ref={containerRef}>
       <div className="date-navigator-controls">
         <button
           type="button"

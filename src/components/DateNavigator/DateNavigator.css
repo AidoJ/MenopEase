@@ -1,5 +1,7 @@
 .date-navigator {
   margin-bottom: 20px;
+  touch-action: pan-y; /* Allow vertical scrolling but handle horizontal swipes */
+  user-select: none; /* Prevent text selection during swipe */
 }
 
 .date-navigator-controls {

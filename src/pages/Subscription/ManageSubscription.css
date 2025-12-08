@@ -1,0 +1,182 @@
+.manage-subscription {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.current-plan-card {
+  margin-bottom: 24px;
+}
+
+.plan-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.plan-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+}
+
+.plan-price-display {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--purple);
+}
+
+.plan-description {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.subscription-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--purple-light);
+  border-radius: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.features-section {
+  margin-bottom: 24px;
+  padding-top: 24px;
+  border-top: 2px solid rgba(123, 91, 216, 0.1);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text-primary);
+  padding: 8px 0;
+}
+
+.feature-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.action-buttons {
+  margin-top: 24px;
+}
+
+.history-card {
+  margin-top: 24px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--purple-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--purple);
+}
+
+.history-event {
+  flex: 1;
+}
+
+.history-event-type {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.history-event-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.history-change {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 16px;
+}
+
+.history-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.error-card {
+  background: #fee;
+  border-color: #fcc;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: #c33;
+  font-weight: 600;
+}
+
+.success-card {
+  background: #efe;
+  border-color: #cfc;
+  margin-bottom: 20px;
+}
+
+.success-message {
+  color: #3c3;
+  font-weight: 600;
+}
+

@@ -302,7 +302,11 @@ const Profile = () => {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-              <Button variant="teal" style={{ flex: 1 }}>
+              <Button 
+                variant="teal" 
+                style={{ flex: 1 }}
+                onClick={() => navigate('/subscription/manage')}
+              >
                 Manage Subscription
               </Button>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>

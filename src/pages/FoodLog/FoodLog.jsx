@@ -26,6 +26,7 @@ const FoodLog = () => {
   const [selectedFoods, setSelectedFoods] = useState([])
   const [mealType, setMealType] = useState('Breakfast')
   const [postMealSymptoms, setPostMealSymptoms] = useState([])
+  const [mealNotes, setMealNotes] = useState('')
   const [customFoodName, setCustomFoodName] = useState('')
   const [showCustomFoodInput, setShowCustomFoodInput] = useState(false)
   const [showSaveToMasterPrompt, setShowSaveToMasterPrompt] = useState(false)
@@ -241,6 +242,7 @@ const FoodLog = () => {
           isCustom: f.isCustom || false
         })),
         post_meal_symptoms: postMealSymptoms,
+        notes: mealNotes || null,
       }
 
       const result = await foodService.create(foodData)
@@ -251,6 +253,7 @@ const FoodLog = () => {
         setSuccess(false)
         setSelectedFoods([])
         setPostMealSymptoms([])
+        setMealNotes('')
         setSearchTerm('')
         loadTodayMeals()
       }, 2000)
@@ -287,6 +290,11 @@ const FoodLog = () => {
     }
     if (meal.post_meal_symptoms) {
       setPostMealSymptoms(meal.post_meal_symptoms)
+    }
+    if (meal.notes) {
+      setMealNotes(meal.notes)
+    } else {
+      setMealNotes('')
     }
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -651,6 +659,17 @@ const FoodLog = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="form-group">
+            <div className="form-label">Notes & Comments</div>
+            <textarea
+              className="form-textarea"
+              value={mealNotes}
+              onChange={(e) => setMealNotes(e.target.value)}
+              placeholder="Add notes about this meal: why you changed your food choices, reactions, substitutions, etc."
+              rows="3"
+            />
           </div>
 
           {error && <div className="error-message">{error}</div>}
