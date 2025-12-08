@@ -77,3 +77,4 @@ The **service_role key** bypasses RLS and should only be used in secure server e
 
 
 
+

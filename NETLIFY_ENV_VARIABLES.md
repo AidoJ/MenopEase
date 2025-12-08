@@ -1,119 +1,213 @@
-# Netlify Environment Variables Setup
+# Netlify Environment Variables Guide
 
-This document lists all environment variables that need to be added to your Netlify site settings.
+## 🔑 Complete Environment Variables List
 
-## How to Add Variables in Netlify
+This document lists ALL environment variables needed for your MenoTrak application to work correctly on Netlify.
 
-1. Go to your Netlify site dashboard
-2. Navigate to **Site settings** → **Environment variables**
-3. Click **Add variable** for each variable below
-4. After adding all variables, **redeploy your site** for changes to take effect
+## 📋 How to Add Variables in Netlify
+
+1. Go to your Netlify dashboard
+2. Select your site
+3. Navigate to **Site settings** → **Environment variables**
+4. Click **Add variable** for each variable below
+5. **Important**: Variable names are case-sensitive and must match exactly
 
 ---
 
-## Required Environment Variables
+## 🌐 Frontend Variables (VITE_*)
 
-### Supabase (Already Set - Frontend)
-These should already be set from initial setup:
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+These variables are available in the browser and must start with `VITE_` for Vite to include them.
 
-### Supabase (Backend Functions - NEW)
-These are needed for serverless functions to access the database:
-- `SUPABASE_URL` - Same as VITE_SUPABASE_URL (without VITE_ prefix)
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service_role key (NOT the anon key!)
-  - ⚠️ **Important**: This is a secret key. Get it from Supabase Dashboard → Settings → API → service_role key
+### Supabase Configuration
+```
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Where to find:**
+- Supabase Dashboard → Project Settings → API
+- Copy the "Project URL" and "anon public" key
+
+### Stripe Configuration (Frontend)
+```
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_xxxxx or pk_test_xxxxx
+```
+
+**Where to find:**
+- Stripe Dashboard → Developers → API keys
+- Use the "Publishable key" (starts with `pk_`)
 
 ### EmailJS Configuration
-- `EMAILJS_SERVICE_ID` - Your EmailJS Service ID
-  - Get from: EmailJS Dashboard → Email Services
-- `EMAILJS_PUBLIC_KEY` - Your EmailJS Public Key
-  - Get from: EmailJS Dashboard → Account → API Keys → Public Key
+```
+VITE_EMAILJS_SERVICE_ID=service_xxxxx
+VITE_EMAILJS_PUBLIC_KEY=xxxxx
+VITE_EMAILJS_TEMPLATE_ID_WELCOME=template_xxxxx
+VITE_EMAILJS_TEMPLATE_ID_SUMMARY=template_xxxxx
+VITE_EMAILJS_TEMPLATE_ID_REPORT=template_xxxxx
+```
 
-### EmailJS Template IDs
-These are the Template IDs you set when creating templates in EmailJS (must be ≤24 characters):
-- `EMAILJS_TEMPLATE_REMINDER` = `Meno_Reminder`
-- `EMAILJS_TEMPLATE_REPORT_DAILY` = `Meno_ReportDaily`
-- `EMAILJS_TEMPLATE_REPORT_WEEKLY` = `Meno_ReportWeekly`
-- `EMAILJS_TEMPLATE_REPORT_MONTHLY` = `Meno_ReportMonthly`
-- `EMAILJS_TEMPLATE_WELCOME` = `Meno_Welcome`
-- `EMAILJS_TEMPLATE_UPGRADE` = `Meno_Upgrade`
-- `EMAILJS_TEMPLATE_DOWNGRADE` = `Meno_Downgrade`
-- `EMAILJS_TEMPLATE_CANCELLED` = `Meno_Cancelled`
+**Where to find:**
+- EmailJS Dashboard → Integration → Email Service
+- EmailJS Dashboard → Email Templates
 
-### Twilio Configuration (for SMS)
-- `TWILIO_ACCOUNT_SID` - Your Twilio Account SID
-  - Get from: Twilio Console → Account Info
-- `TWILIO_AUTH_TOKEN` - Your Twilio Auth Token
-  - Get from: Twilio Console → Account Info
-- `TWILIO_PHONE_NUMBER` - Your Twilio phone number (format: +1234567890)
-  - Get from: Twilio Console → Phone Numbers → Manage → Active numbers
+### Weather API
+```
+VITE_WEATHER_API_KEY=your_openweathermap_api_key
+```
 
-### Stripe Configuration (for Subscriptions)
-- `STRIPE_SECRET_KEY` - Your Stripe Secret Key (starts with `sk_`)
-  - Get from: Stripe Dashboard → Developers → API keys
-- `STRIPE_PUBLISHABLE_KEY` - Your Stripe Publishable Key (starts with `pk_`)
-  - Get from: Stripe Dashboard → Developers → API keys
-- `STRIPE_WEBHOOK_SECRET` - Webhook signing secret (for subscription events)
-  - Get from: Stripe Dashboard → Developers → Webhooks → Add endpoint → Signing secret
-  - **IMPORTANT**: Add webhook endpoint: `https://your-site.netlify.app/.netlify/functions/stripe-webhook`
-  - Listen to events: `checkout.session.completed`, `customer.subscription.*`, `invoice.*`
+**Where to find:**
+- OpenWeatherMap → API keys section
+
+### App URL
+```
+VITE_APP_URL=https://your-site.netlify.app
+```
+
+**Note:** This should be your Netlify site URL. You can also use `https://${site-name}.netlify.app`
 
 ---
 
-## Quick Reference Table
+## 🔒 Backend Function Variables (NOT VITE_*)
 
-| Variable Name | Example Value | Where to Get It |
-|--------------|---------------|-----------------|
-| `SUPABASE_URL` | `https://xxxxx.supabase.co` | Supabase Dashboard → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGc...` (long JWT) | Supabase Dashboard → Settings → API → service_role key |
-| `EMAILJS_SERVICE_ID` | `service_xxxxx` | EmailJS Dashboard → Email Services |
-| `EMAILJS_PUBLIC_KEY` | `xxxxx` | EmailJS Dashboard → Account → API Keys |
-| `EMAILJS_TEMPLATE_REMINDER` | `Meno_Reminder` | EmailJS Dashboard → Templates (the Template ID you set) |
-| `EMAILJS_TEMPLATE_REPORT_DAILY` | `Meno_ReportDaily` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_REPORT_WEEKLY` | `Meno_ReportWeekly` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_REPORT_MONTHLY` | `Meno_ReportMonthly` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_WELCOME` | `Meno_Welcome` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_UPGRADE` | `Meno_Upgrade` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_DOWNGRADE` | `Meno_Downgrade` | EmailJS Dashboard → Templates |
-| `EMAILJS_TEMPLATE_CANCELLED` | `Meno_Cancelled` | EmailJS Dashboard → Templates |
-| `TWILIO_ACCOUNT_SID` | `ACxxxxxxxxxxxxx` | Twilio Console → Account Info |
-| `TWILIO_AUTH_TOKEN` | `xxxxxxxxxxxxx` | Twilio Console → Account Info |
-| `TWILIO_PHONE_NUMBER` | `+1234567890` | Twilio Console → Phone Numbers |
+These variables are **server-side only** and should **NOT** have the `VITE_` prefix. They are used by Netlify Functions.
+
+### Stripe Configuration (Backend)
+```
+STRIPE_SECRET_KEY=sk_live_xxxxx or sk_test_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+```
+
+**Where to find:**
+- Stripe Dashboard → Developers → API keys
+- Use the "Secret key" (starts with `sk_`)
+- Stripe Dashboard → Developers → Webhooks → Add endpoint → Copy signing secret
+
+**⚠️ CRITICAL:** Never expose the secret key in the frontend!
+
+### Supabase Configuration (Backend)
+```
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Where to find:**
+- Supabase Dashboard → Project Settings → API
+- Copy the "Project URL" (same as VITE_SUPABASE_URL)
+- Copy the "service_role" key (NOT the anon key - this has admin access)
+
+**⚠️ CRITICAL:** 
+- The service role key bypasses Row Level Security (RLS)
+- Never expose this key in the frontend
+- Only use in server-side functions
+
+### EmailJS Configuration (Backend)
+```
+EMAILJS_SERVICE_ID=service_xxxxx
+EMAILJS_PUBLIC_KEY=xxxxx
+EMAILJS_TEMPLATE_WELCOME=template_xxxxx
+EMAILJS_TEMPLATE_UPGRADE=template_xxxxx
+EMAILJS_TEMPLATE_DOWNGRADE=template_xxxxx
+EMAILJS_TEMPLATE_CANCELLED=template_xxxxx
+```
+
+**Note:** These are the same values as the VITE_ versions, but without the prefix for use in functions.
+
+### Twilio Configuration (Backend)
+```
+TWILIO_ACCOUNT_SID=ACxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+**Where to find:**
+- Twilio Console → Account → Account SID
+- Twilio Console → Account → Auth Token
+- Twilio Console → Phone Numbers → Manage → Active numbers
 
 ---
 
-## Important Notes
+## 📝 Quick Reference Table
 
-1. **VITE_ Prefix**: Variables used in the frontend (React app) must have the `VITE_` prefix. Variables used only in Netlify Functions do NOT need the prefix.
-
-2. **Service Role Key**: The `SUPABASE_SERVICE_ROLE_KEY` is a secret key that bypasses Row Level Security. Keep it secure and never expose it in the frontend code.
-
-3. **Template IDs**: These should match exactly what you set in EmailJS when creating the templates (e.g., `Meno_Reminder`, `Meno_ReportDaily`, etc.)
-
-4. **After Adding Variables**: 
-   - Save all variables
-   - Go to **Deploys** tab
-   - Click **Trigger deploy** → **Clear cache and deploy site**
-   - This ensures all functions get the new environment variables
-
-5. **Testing**: After deployment, you can test the functions by:
-   - Checking Netlify Function logs (Site → Functions → View logs)
-   - Testing reminder processing manually (if you set up scheduled functions)
+| Variable Name | Type | Required | Where Used |
+|--------------|------|----------|------------|
+| `VITE_SUPABASE_URL` | Frontend | ✅ Yes | React app |
+| `VITE_SUPABASE_ANON_KEY` | Frontend | ✅ Yes | React app |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Frontend | ✅ Yes | React app |
+| `VITE_EMAILJS_SERVICE_ID` | Frontend | Optional | React app |
+| `VITE_EMAILJS_PUBLIC_KEY` | Frontend | Optional | React app |
+| `VITE_EMAILJS_TEMPLATE_ID_*` | Frontend | Optional | React app |
+| `VITE_WEATHER_API_KEY` | Frontend | Optional | React app |
+| `VITE_APP_URL` | Frontend | ✅ Yes | React app |
+| `STRIPE_SECRET_KEY` | Backend | ✅ Yes | Netlify Functions |
+| `STRIPE_WEBHOOK_SECRET` | Backend | ✅ Yes | Stripe webhook function |
+| `SUPABASE_URL` | Backend | ✅ Yes | Netlify Functions |
+| `SUPABASE_SERVICE_ROLE_KEY` | Backend | ✅ Yes | Netlify Functions |
+| `EMAILJS_SERVICE_ID` | Backend | Optional | Netlify Functions |
+| `EMAILJS_PUBLIC_KEY` | Backend | Optional | Netlify Functions |
+| `EMAILJS_TEMPLATE_*` | Backend | Optional | Netlify Functions |
+| `TWILIO_ACCOUNT_SID` | Backend | Optional | SMS function |
+| `TWILIO_AUTH_TOKEN` | Backend | Optional | SMS function |
+| `TWILIO_PHONE_NUMBER` | Backend | Optional | SMS function |
 
 ---
 
-## Optional: Scheduled Functions Setup
+## ✅ Verification Checklist
 
-To automatically process reminders and generate reports, you'll need to set up scheduled functions in Netlify:
+After adding all variables:
 
-1. Go to **Site settings** → **Functions**
-2. For `process-reminders`: Set schedule to run every hour (cron: `0 * * * *`)
-3. For `generate-reports`: Set schedule to run daily at 5 PM (cron: `0 17 * * *`)
+- [ ] All `VITE_*` variables are set for frontend
+- [ ] All backend variables (without `VITE_`) are set for functions
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` is different from `VITE_SUPABASE_ANON_KEY`
+- [ ] `STRIPE_SECRET_KEY` is different from `VITE_STRIPE_PUBLISHABLE_KEY`
+- [ ] No placeholder values (like "your_supabase_project_url")
+- [ ] No extra spaces or quotes around values
+- [ ] Triggered a new deploy after adding variables
 
-Or use Netlify's Scheduled Functions feature (requires Netlify Pro plan) or external cron services.
+---
 
+## 🧪 Testing Variables
 
+### Test Frontend Variables
+1. Deploy to Netlify
+2. Open browser console
+3. Check for Supabase initialization message
+4. Verify no "Missing environment variables" errors
 
+### Test Backend Functions
+1. Use Netlify Functions logs
+2. Test a function endpoint (e.g., `/api/create-checkout-session`)
+3. Check function logs for errors
 
+---
 
+## 🔄 Updating Variables
+
+1. Go to Netlify Dashboard → Site settings → Environment variables
+2. Click on the variable to edit
+3. Update the value
+4. **Important:** Trigger a new deploy for changes to take effect
+   - Go to Deploys tab
+   - Click "Trigger deploy" → "Clear cache and deploy site"
+
+---
+
+## 🚨 Common Mistakes
+
+1. ❌ Using `SUPABASE_URL` instead of `VITE_SUPABASE_URL` in frontend
+2. ❌ Using `VITE_` prefix on backend function variables
+3. ❌ Using anon key instead of service role key in functions
+4. ❌ Using publishable key instead of secret key in functions
+5. ❌ Leaving placeholder values
+6. ❌ Not redeploying after adding variables
+7. ❌ Extra spaces or quotes in values
+
+---
+
+## 📞 Need Help?
+
+If you're still having issues:
+1. Check Netlify build logs
+2. Check browser console for frontend errors
+3. Check Netlify Functions logs for backend errors
+4. Verify all variables are set correctly
+5. Ensure you've triggered a new deploy
