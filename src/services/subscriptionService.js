@@ -113,8 +113,9 @@ export const subscriptionService = {
 
   /**
    * Create a Stripe checkout session
+   * Can use either priceId (if pre-configured) or amount (to create price dynamically)
    */
-  createCheckoutSession: async (priceId, userId, tierCode, period) => {
+  createCheckoutSession: async (priceId, userId, tierCode, period, amount = null, tierName = null) => {
     try {
       const response = await fetch('/.netlify/functions/create-checkout-session', {
         method: 'POST',
@@ -122,10 +123,12 @@ export const subscriptionService = {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          priceId,
+          priceId: priceId || null,
           userId,
           tierCode,
-          period
+          period,
+          amount: amount || null,
+          tierName: tierName || null
         })
       })
 

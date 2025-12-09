@@ -23,19 +23,42 @@ const SubscriptionPlans = () => {
     if (!user) return
 
     setLoading(true)
+    setError('')
     try {
       // Load tiers
       const { data: tiersData, error: tiersError } = await subscriptionService.getAllTiers()
-      if (tiersError) throw tiersError
+      
+      if (tiersError) {
+        console.error('Error fetching tiers:', tiersError)
+        // Provide more specific error message
+        if (tiersError.code === 'PGRST116' || tiersError.message?.includes('relation') || tiersError.message?.includes('does not exist')) {
+          setError('Subscription tiers table not found. Please contact support.')
+        } else if (tiersError.message?.includes('permission') || tiersError.message?.includes('policy')) {
+          setError('Permission denied. Please refresh the page and try again.')
+        } else {
+          setError(`Failed to load subscription plans: ${tiersError.message || 'Unknown error'}`)
+        }
+        return
+      }
+
+      if (!tiersData || tiersData.length === 0) {
+        setError('No subscription plans available. Please contact support.')
+        return
+      }
 
       // Load current subscription
-      const { data: subscriptionData } = await subscriptionService.getCurrentSubscription(user.id)
+      const { data: subscriptionData, error: subError } = await subscriptionService.getCurrentSubscription(user.id)
       
-      setTiers(tiersData || [])
+      if (subError) {
+        console.warn('Error loading current subscription:', subError)
+        // Don't fail the whole page if subscription load fails
+      }
+      
+      setTiers(tiersData)
       setCurrentSubscription(subscriptionData)
     } catch (err) {
       console.error('Error loading subscription data:', err)
-      setError('Failed to load subscription plans')
+      setError(`Failed to load subscription plans: ${err.message || 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -51,23 +74,22 @@ const SubscriptionPlans = () => {
     setError('')
 
     try {
-      // Get price ID based on billing period
+      // Get price ID if configured, otherwise use amount to create dynamically
       const priceId = billingPeriod === 'yearly' 
         ? tier.stripe_price_id_yearly 
         : tier.stripe_price_id_monthly
+      
+      // Get amount for dynamic price creation
+      const amount = getPrice(tier)
 
-      if (!priceId) {
-        setError('Price not configured for this tier')
-        setProcessing(false)
-        return
-      }
-
-      // Create checkout session
+      // Create checkout session (will create price dynamically if priceId not provided)
       const { data, error: checkoutError } = await subscriptionService.createCheckoutSession(
-        priceId,
+        priceId || null, // Pass null if not configured, function will create price dynamically
         user.id,
         tier.tier_code,
-        billingPeriod
+        billingPeriod,
+        amount, // Pass amount for dynamic price creation
+        tier.tier_name || tier.name // Pass tier name for product creation
       )
 
       if (checkoutError) throw checkoutError
@@ -163,10 +185,14 @@ const SubscriptionPlans = () => {
           const tierRankValue = tierRank[tier.tier_code] || 0
           const canUpgrade = tierRankValue > currentRank
           const isFree = tier.tier_code === 'free'
+          // Price ID is optional - we can create prices dynamically
+          const priceId = billingPeriod === 'yearly' 
+            ? tier.stripe_price_id_yearly 
+            : tier.stripe_price_id_monthly
 
           return (
             <Card 
-              key={tier.id} 
+              key={tier.tier_code} 
               className={`plan-card ${isCurrent ? 'current-plan' : ''} ${tier.tier_code}`}
             >
               {isCurrent && (
@@ -174,7 +200,7 @@ const SubscriptionPlans = () => {
               )}
               
               <div className="plan-header">
-                <h3 className="plan-name">{tier.name}</h3>
+                <h3 className="plan-name">{tier.tier_name || tier.name || subscriptionService.getTierName(tier.tier_code)}</h3>
                 <div className="plan-price">
                   {isFree ? (
                     <span className="price-free">Free</span>
@@ -190,9 +216,11 @@ const SubscriptionPlans = () => {
                 )}
               </div>
 
-              <div className="plan-description">
-                {tier.description}
-              </div>
+              {tier.description && (
+                <div className="plan-description">
+                  {tier.description}
+                </div>
+              )}
 
               <div className="plan-features">
                 <div className="feature-list">

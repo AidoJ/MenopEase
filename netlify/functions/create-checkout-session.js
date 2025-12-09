@@ -26,13 +26,13 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { priceId, userId, tierCode, period } = JSON.parse(event.body)
+    const { priceId, userId, tierCode, period, amount, tierName } = JSON.parse(event.body)
 
     // Validate required fields
-    if (!priceId || !userId) {
+    if (!userId || !tierCode || !period) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required fields: priceId, userId' })
+        body: JSON.stringify({ error: 'Missing required fields: userId, tierCode, period' })
       }
     }
 
@@ -55,13 +55,65 @@ exports.handler = async (event, context) => {
     const successUrl = `${appUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${appUrl}/subscription/plans`
 
+    let finalPriceId = priceId
+
+    // If no priceId provided, create price dynamically
+    if (!finalPriceId && amount) {
+      // First, find or create a product for this tier
+      const productName = tierName || `${tierCode.charAt(0).toUpperCase() + tierCode.slice(1)} Plan`
+      
+      // Search for existing product
+      const products = await stripe.products.list({
+        limit: 100,
+        active: true
+      })
+      
+      let product = products.data.find(p => p.name === productName)
+      
+      // Create product if it doesn't exist
+      if (!product) {
+        product = await stripe.products.create({
+          name: productName,
+          description: `Subscription plan for ${productName}`,
+          metadata: {
+            tier_code: tierCode
+          }
+        })
+      }
+
+      // Create price for this billing period
+      const interval = period === 'yearly' ? 'year' : 'month'
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(amount * 100), // Convert to cents
+        currency: 'usd',
+        recurring: {
+          interval: interval
+        },
+        metadata: {
+          tier_code: tierCode,
+          period: period
+        }
+      })
+
+      finalPriceId = price.id
+      console.log(`Created dynamic price ${finalPriceId} for ${tierCode} ${period} at $${amount}`)
+    }
+
+    if (!finalPriceId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Either priceId or amount must be provided' })
+      }
+    }
+
     // Prepare checkout session parameters
     const sessionParams = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
-          price: priceId,
+          price: finalPriceId,
           quantity: 1
         }
       ],
