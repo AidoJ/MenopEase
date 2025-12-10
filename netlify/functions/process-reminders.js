@@ -1,9 +1,16 @@
 /**
  * Netlify Function: Process Reminders
- * 
+ *
  * This function should be scheduled to run periodically (e.g., every hour)
  * It checks for due reminders and sends them via email/SMS based on user preferences
- * 
+ *
+ * TIMEZONE HANDLING:
+ * - Netlify functions run in UTC timezone
+ * - User reminder times are stored in their local timezone
+ * - This function converts current UTC time to each user's local timezone
+ * - Compares user's local time to their reminder time
+ * - This ensures reminders fire at the correct local time for each user
+ *
  * Environment Variables Required:
  * - SUPABASE_URL
  * - SUPABASE_SERVICE_ROLE_KEY (needed to bypass RLS)
@@ -38,7 +45,7 @@ exports.handler = async (event, context) => {
     // Fetch all active reminders
     const { data: reminders, error: remindersError } = await supabase
       .from('reminders')
-      .select('*, user_profiles!inner(communication_preferences, phone, email, first_name)')
+      .select('*, user_profiles!inner(communication_preferences, phone, email, first_name, timezone)')
       .eq('is_active', true)
 
     if (remindersError) {
@@ -70,20 +77,26 @@ exports.handler = async (event, context) => {
           continue
         }
 
+        // Get user's local time based on their timezone
+        const userTimezone = profile.timezone || 'UTC'
+        const userLocalTime = getUserLocalTime(now, userTimezone)
+        const userDayOfWeek = userLocalTime.getDay()
+        const userTimeString = `${String(userLocalTime.getHours()).padStart(2, '0')}:${String(userLocalTime.getMinutes()).padStart(2, '0')}`
+
         // Check if reminder is due based on frequency and time
-        const isDue = checkReminderDue(reminder, currentTime, currentDayOfWeek, prefs.reminders)
-        
+        const isDue = checkReminderDue(reminder, userTimeString, userDayOfWeek, prefs.reminders)
+
         if (!isDue) {
           continue
         }
 
-        // Check if already sent today (to avoid duplicates)
-        const today = now.toISOString().split('T')[0]
+        // Check if already sent today in user's local timezone (to avoid duplicates)
+        const userLocalDate = userLocalTime.toISOString().split('T')[0]
         const { data: existingLog } = await supabase
           .from('reminder_logs')
           .select('id')
           .eq('reminder_id', reminder.id)
-          .eq('date', today)
+          .eq('date', userLocalDate)
           .eq('status', 'sent')
           .limit(1)
 
@@ -112,14 +125,15 @@ exports.handler = async (event, context) => {
         }
 
         if (sent) {
-          // Log the reminder
+          // Log the reminder with user's local time
+          const userLocalDate = userLocalTime.toISOString().split('T')[0]
           await supabase
             .from('reminder_logs')
             .insert({
               reminder_id: reminder.id,
               user_id: reminder.user_id,
-              date: today,
-              time: currentTime,
+              date: userLocalDate,
+              time: userTimeString,
               status: 'sent',
               method: method,
             })
@@ -153,6 +167,44 @@ exports.handler = async (event, context) => {
 }
 
 /**
+ * Convert UTC time to user's local time based on their timezone
+ */
+function getUserLocalTime(utcDate, timezone) {
+  try {
+    // Use Intl.DateTimeFormat to convert to user's timezone
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+
+    const parts = formatter.formatToParts(utcDate)
+    const dateParts = {}
+
+    parts.forEach(part => {
+      if (part.type !== 'literal') {
+        dateParts[part.type] = part.value
+      }
+    })
+
+    // Create a new Date object in the user's timezone
+    // Note: This creates a Date in UTC but with the values from the user's timezone
+    return new Date(
+      `${dateParts.year}-${dateParts.month}-${dateParts.day}T${dateParts.hour}:${dateParts.minute}:${dateParts.second}Z`
+    )
+  } catch (error) {
+    console.error('Error converting timezone:', error)
+    // Fallback to UTC if timezone conversion fails
+    return utcDate
+  }
+}
+
+/**
  * Check if a reminder is due based on frequency and time
  */
 function checkReminderDue(reminder, currentTime, currentDayOfWeek, prefs) {
@@ -164,6 +216,13 @@ function checkReminderDue(reminder, currentTime, currentDayOfWeek, prefs) {
   // Check if current time is within active hours
   if (currentTime < startTime || currentTime > endTime) {
     return false
+  }
+
+  // Check if today is a scheduled day (if days_of_week is specified)
+  if (reminder.days_of_week && reminder.days_of_week.length > 0) {
+    if (!reminder.days_of_week.includes(currentDayOfWeek)) {
+      return false // Not scheduled for today
+    }
   }
 
   // Check if reminder time matches (within 5 minutes tolerance)
