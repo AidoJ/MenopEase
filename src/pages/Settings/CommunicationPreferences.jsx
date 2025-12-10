@@ -106,29 +106,31 @@ const CommunicationPreferences = () => {
   }
 
   const validatePreferences = () => {
-    const commOptions = subscriptionTier?.features?.communication_options || {}
-    
-    // Check SMS availability
+    const reminderFeatures = subscriptionTier?.features?.reminders || {}
+    const reportFeatures = subscriptionTier?.features?.reports || {}
+
+    // Check SMS availability for reminders
     if (preferences.reminders.method === 'sms' || preferences.reminders.method === 'both') {
-      if (!commOptions.sms) {
-        return 'SMS reminders require Basic tier or higher. Please upgrade or select Email only.'
+      if (!reminderFeatures.methods?.includes('sms')) {
+        return 'SMS reminders require Premium tier or higher. Please upgrade or select Email only.'
       }
     }
-    
+
+    // Check SMS availability for reports
     if (preferences.reports.method === 'sms' || preferences.reports.method === 'both') {
-      if (!commOptions.sms) {
-        return 'SMS reports require Basic tier or higher. Please upgrade or select Email only.'
+      if (!reportFeatures.methods?.includes('sms')) {
+        return 'SMS reports require Premium tier or higher. Please upgrade or select Email only.'
       }
     }
 
     // Check frequency availability
-    const allowedFrequencies = commOptions.reminder_frequencies || ['daily']
+    const allowedFrequencies = reminderFeatures.frequencies || ['daily']
     if (!allowedFrequencies.includes(preferences.reminders.frequency)) {
       return `Reminder frequency "${preferences.reminders.frequency}" requires Premium tier or higher.`
     }
 
     // Check reports availability
-    if (preferences.reports.enabled && !commOptions.reports) {
+    if (preferences.reports.enabled && !reportFeatures.enabled) {
       return 'Reports require Basic tier or higher. Please upgrade.'
     }
 
@@ -190,9 +192,11 @@ const CommunicationPreferences = () => {
     return s[(v - 20) % 10] || s[v] || s[0]
   }
 
-  const commOptions = subscriptionTier?.features?.communication_options || {}
-  const reminderFrequencies = commOptions.reminder_frequencies || ['daily']
-  const reportFrequencies = commOptions.report_frequencies || ['weekly']
+  const reminderFeatures = subscriptionTier?.features?.reminders || {}
+  const reportFeatures = subscriptionTier?.features?.reports || {}
+  const reminderFrequencies = reminderFeatures.frequencies || ['daily']
+  const reportFrequencies = reportFeatures.frequencies || ['weekly']
+  const smsAvailable = reminderFeatures.methods?.includes('sms')
 
   if (loading) {
     return (
@@ -213,7 +217,7 @@ const CommunicationPreferences = () => {
         <Card>
           <div className="tier-badge">
             Current Tier: <strong>{subscriptionTier.tier_name}</strong>
-            {!commOptions.sms && (
+            {!smsAvailable && (
               <span className="upgrade-hint">Upgrade for SMS and more options</span>
             )}
           </div>
@@ -257,7 +261,7 @@ const CommunicationPreferences = () => {
                     />
                     <span>Email</span>
                   </label>
-                  <label className={`radio-option ${!commOptions.sms ? 'disabled' : ''}`}>
+                  <label className={`radio-option ${!smsAvailable ? 'disabled' : ''}`}>
                     <input
                       type="radio"
                       name="reminder-method"
@@ -267,11 +271,11 @@ const CommunicationPreferences = () => {
                         ...preferences,
                         reminders: { ...preferences.reminders, method: e.target.value }
                       })}
-                      disabled={!commOptions.sms}
+                      disabled={!smsAvailable}
                     />
-                    <span>SMS {!commOptions.sms && '(Upgrade Required)'}</span>
+                    <span>SMS {!smsAvailable && '(Upgrade Required)'}</span>
                   </label>
-                  <label className={`radio-option ${!commOptions.sms ? 'disabled' : ''}`}>
+                  <label className={`radio-option ${!smsAvailable ? 'disabled' : ''}`}>
                     <input
                       type="radio"
                       name="reminder-method"
@@ -281,9 +285,9 @@ const CommunicationPreferences = () => {
                         ...preferences,
                         reminders: { ...preferences.reminders, method: e.target.value }
                       })}
-                      disabled={!commOptions.sms}
+                      disabled={!smsAvailable}
                     />
-                    <span>Both {!commOptions.sms && '(Upgrade Required)'}</span>
+                    <span>Both {!smsAvailable && '(Upgrade Required)'}</span>
                   </label>
                 </div>
               </div>
@@ -362,9 +366,9 @@ const CommunicationPreferences = () => {
                   reports: { ...preferences.reports, enabled: e.target.checked }
                 })}
                 className="toggle-checkbox"
-                disabled={!commOptions.reports}
+                disabled={!reportFeatures.enabled}
               />
-              <span>Enable Reports {!commOptions.reports && '(Upgrade Required)'}</span>
+              <span>Enable Reports {!reportFeatures.enabled && '(Upgrade Required)'}</span>
             </label>
           </div>
 
@@ -457,7 +461,7 @@ const CommunicationPreferences = () => {
                     />
                     <span>Email</span>
                   </label>
-                  <label className={`radio-option ${!commOptions.sms ? 'disabled' : ''}`}>
+                  <label className={`radio-option ${!smsAvailable ? 'disabled' : ''}`}>
                     <input
                       type="radio"
                       name="report-method"
@@ -467,11 +471,11 @@ const CommunicationPreferences = () => {
                         ...preferences,
                         reports: { ...preferences.reports, method: e.target.value }
                       })}
-                      disabled={!commOptions.sms}
+                      disabled={!smsAvailable}
                     />
-                    <span>SMS {!commOptions.sms && '(Upgrade Required)'}</span>
+                    <span>SMS {!smsAvailable && '(Upgrade Required)'}</span>
                   </label>
-                  <label className={`radio-option ${!commOptions.sms ? 'disabled' : ''}`}>
+                  <label className={`radio-option ${!smsAvailable ? 'disabled' : ''}`}>
                     <input
                       type="radio"
                       name="report-method"
@@ -481,9 +485,9 @@ const CommunicationPreferences = () => {
                         ...preferences,
                         reports: { ...preferences.reports, method: e.target.value }
                       })}
-                      disabled={!commOptions.sms}
+                      disabled={!smsAvailable}
                     />
-                    <span>Both {!commOptions.sms && '(Upgrade Required)'}</span>
+                    <span>Both {!smsAvailable && '(Upgrade Required)'}</span>
                   </label>
                 </div>
               </div>

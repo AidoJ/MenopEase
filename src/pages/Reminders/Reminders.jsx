@@ -29,8 +29,13 @@ const Reminders = () => {
       const { tier } = await userService.getSubscriptionTier(user.id)
       setSubscriptionTier(tier)
 
-      // Load reminders
-      const { data, error } = await userService.reminderService.getReminders(user.id)
+      // Load reminders from database
+      const { data, error } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('time', { ascending: true })
+
       if (error) throw error
       setReminders(data || [])
     } catch (err) {
@@ -42,14 +47,14 @@ const Reminders = () => {
   }
 
   const handleAdd = () => {
-    // Check tier limits
-    const commOptions = subscriptionTier?.features?.communication_options || {}
-    if (!commOptions.reminders) {
+    // Check tier limits from features.reminders
+    const reminderFeatures = subscriptionTier?.features?.reminders || {}
+    if (!reminderFeatures.enabled) {
       setError('Reminders require Basic tier or higher. Please upgrade.')
       return
     }
 
-    const maxReminders = subscriptionTier?.max_reminders_per_day || 0
+    const maxReminders = reminderFeatures.max_per_day || 0
     if (reminders.filter(r => r.is_active).length >= maxReminders) {
       setError(`You've reached your reminder limit (${maxReminders} per day). Please upgrade for more reminders.`)
       return
@@ -70,7 +75,11 @@ const Reminders = () => {
     if (!confirm('Are you sure you want to delete this reminder?')) return
 
     try {
-      const { error } = await userService.reminderService.deleteReminder(reminderId)
+      const { error } = await supabase
+        .from('reminders')
+        .delete()
+        .eq('id', reminderId)
+
       if (error) throw error
       setSuccess('Reminder deleted successfully')
       setTimeout(() => setSuccess(''), 3000)
@@ -83,9 +92,11 @@ const Reminders = () => {
 
   const handleToggleActive = async (reminder) => {
     try {
-      const { error } = await userService.reminderService.updateReminder(reminder.id, {
-        is_active: !reminder.is_active,
-      })
+      const { error } = await supabase
+        .from('reminders')
+        .update({ is_active: !reminder.is_active })
+        .eq('id', reminder.id)
+
       if (error) throw error
       setSuccess(`Reminder ${!reminder.is_active ? 'activated' : 'deactivated'}`)
       setTimeout(() => setSuccess(''), 3000)
@@ -105,14 +116,21 @@ const Reminders = () => {
       }
 
       if (editingReminder) {
-        const { error } = await userService.reminderService.updateReminder(editingReminder.id, dataToSave)
+        const { error } = await supabase
+          .from('reminders')
+          .update(dataToSave)
+          .eq('id', editingReminder.id)
+
         if (error) throw error
         setSuccess('Reminder updated successfully')
       } else {
-        const { error } = await userService.reminderService.createReminder({
-          ...dataToSave,
-          user_id: user.id,
-        })
+        const { error } = await supabase
+          .from('reminders')
+          .insert([{
+            ...dataToSave,
+            user_id: user.id,
+          }])
+
         if (error) throw error
         setSuccess('Reminder created successfully')
       }
@@ -135,10 +153,10 @@ const Reminders = () => {
     )
   }
 
-  const commOptions = subscriptionTier?.features?.communication_options || {}
-  const maxReminders = subscriptionTier?.max_reminders_per_day || 0
+  const reminderFeatures = subscriptionTier?.features?.reminders || {}
+  const maxReminders = reminderFeatures.max_per_day || 0
   const activeReminders = reminders.filter(r => r.is_active).length
-  const canAddMore = activeReminders < maxReminders
+  const canAddMore = reminderFeatures.enabled && activeReminders < maxReminders
 
   return (
     <div className="reminders-page">
@@ -174,7 +192,7 @@ const Reminders = () => {
           <Button
             variant="teal"
             onClick={handleAdd}
-            disabled={!canAddMore || !commOptions.reminders}
+            disabled={!canAddMore}
           >
             + Add Reminder
           </Button>
@@ -183,7 +201,7 @@ const Reminders = () => {
         {reminders.length === 0 ? (
           <div className="empty-state">
             <p>No reminders yet. Create one to get started!</p>
-            {!commOptions.reminders && (
+            {!reminderFeatures.enabled && (
               <p className="hint">Reminders require Basic tier or higher.</p>
             )}
           </div>

@@ -284,10 +284,10 @@ const SubscriptionPlans = () => {
                   <Button
                     variant={tier.tier_code === 'professional' ? 'primary' : 'teal'}
                     onClick={() => handleSubscribe(tier)}
-                    disabled={processing || !canUpgrade}
+                    disabled={processing}
                     style={{ width: '100%' }}
                   >
-                    {processing ? 'Processing...' : canUpgrade ? 'Subscribe' : 'Upgrade Required'}
+                    {processing ? 'Processing...' : canUpgrade ? 'Upgrade' : 'Downgrade'}
                   </Button>
                 )}
               </div>
