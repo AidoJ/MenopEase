@@ -309,28 +309,16 @@ const Profile = () => {
                 Manage Subscription
               </Button>
               <Button
-                variant="secondary"
+                variant="teal"
                 onClick={() => navigate('/settings/communication')}
-                style={{
-                  background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
-                  color: '#0369a1',
-                  border: '1px solid #7dd3fc',
-                  fontWeight: '600'
-                }}
               >
-                📱 Communication Settings
+                Communication Settings
               </Button>
               <Button
-                variant="secondary"
+                variant="teal"
                 onClick={() => navigate('/reminders')}
-                style={{
-                  background: 'linear-gradient(135deg, #fae8ff 0%, #fdf4ff 100%)',
-                  color: '#a855f7',
-                  border: '1px solid #d8b4fe',
-                  fontWeight: '600'
-                }}
               >
-                🔔 Manage Reminders
+                Manage Reminders
               </Button>
             </div>
           </div>
