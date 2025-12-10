@@ -1,12 +1,13 @@
 import './Button.css'
 
-const Button = ({ 
-  children, 
-  onClick, 
-  variant = 'primary', 
+const Button = ({
+  children,
+  onClick,
+  variant = 'primary',
   className = '',
   type = 'button',
-  disabled = false
+  disabled = false,
+  style = {}
 }) => {
   return (
     <button
@@ -14,6 +15,7 @@ const Button = ({
       className={`btn btn-${variant} ${className}`}
       onClick={onClick}
       disabled={disabled}
+      style={style}
     >
       {children}
     </button>

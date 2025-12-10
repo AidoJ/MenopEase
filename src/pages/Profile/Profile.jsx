@@ -311,12 +311,22 @@ const Profile = () => {
               <Button
                 variant="secondary"
                 onClick={() => navigate('/settings/communication')}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  color: '#1f2937',
+                  border: '1px solid #d1d5db'
+                }}
               >
                 Communication Settings
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => navigate('/reminders')}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  color: '#1f2937',
+                  border: '1px solid #d1d5db'
+                }}
               >
                 Manage Reminders
               </Button>
