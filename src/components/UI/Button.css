@@ -39,8 +39,14 @@
 }
 
 .btn-secondary {
-  background: var(--purple-light);
-  color: var(--purple);
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #9ca3af;
 }
 
 .btn-outline {

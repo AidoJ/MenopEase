@@ -1,3 +1,15 @@
+.welcome-message {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--purple);
+  margin: 16px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--purple-light) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(123, 91, 216, 0.1);
+  text-align: center;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

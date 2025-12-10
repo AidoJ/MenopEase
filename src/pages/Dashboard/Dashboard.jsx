@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [quickWater, setQuickWater] = useState(0)
   const [quickEnergy, setQuickEnergy] = useState(5)
   const [savingQuick, setSavingQuick] = useState(false)
+  const [userName, setUserName] = useState('')
 
   const quickActions = [
     { icon: '🌙', label: 'Sleep', path: '/sleep' },
@@ -42,8 +43,26 @@ const Dashboard = () => {
     if (user) {
       loadDashboardData()
       loadRecentHistory()
+      loadUserName()
     }
   }, [user, selectedDate])
+
+  const loadUserName = async () => {
+    if (!user) return
+    try {
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('first_name')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (data?.first_name) {
+        setUserName(data.first_name)
+      }
+    } catch (err) {
+      console.error('Error loading user name:', err)
+    }
+  }
 
   // Update URL when date changes
   useEffect(() => {
@@ -326,11 +345,17 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <DateNavigator 
+      <DateNavigator
         selectedDate={selectedDate}
         onChange={setSelectedDate}
         maxDate={getTodayDate()}
       />
+
+      {userName && (
+        <div className="welcome-message">
+          Welcome, {userName}! 👋
+        </div>
+      )}
 
       <Card>
         <div className="card-header">
