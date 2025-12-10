@@ -312,23 +312,25 @@ const Profile = () => {
                 variant="secondary"
                 onClick={() => navigate('/settings/communication')}
                 style={{
-                  backgroundColor: '#f3f4f6',
-                  color: '#1f2937',
-                  border: '1px solid #d1d5db'
+                  background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
+                  color: '#0369a1',
+                  border: '1px solid #7dd3fc',
+                  fontWeight: '600'
                 }}
               >
-                Communication Settings
+                📱 Communication Settings
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => navigate('/reminders')}
                 style={{
-                  backgroundColor: '#f3f4f6',
-                  color: '#1f2937',
-                  border: '1px solid #d1d5db'
+                  background: 'linear-gradient(135deg, #fae8ff 0%, #fdf4ff 100%)',
+                  color: '#a855f7',
+                  border: '1px solid #d8b4fe',
+                  fontWeight: '600'
                 }}
               >
-                Manage Reminders
+                🔔 Manage Reminders
               </Button>
             </div>
           </div>
