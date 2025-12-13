@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import Card from '../../components/UI/Card'
 import Button from '../../components/UI/Button'
 import DateNavigator from '../../components/DateNavigator/DateNavigator'
+import JFTWelcomeCard from '../../components/JFTCard/JFTWelcomeCard'
 import { supabase } from '../../config/supabase'
 import { getTodayDate, calculateSleepDuration, formatDate } from '../../utils/helpers'
 import { format, subDays } from 'date-fns'
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const [quickEnergy, setQuickEnergy] = useState(5)
   const [savingQuick, setSavingQuick] = useState(false)
   const [userName, setUserName] = useState('')
+  const [showJFTCard, setShowJFTCard] = useState(false)
 
   const quickActions = [
     { icon: '🌙', label: 'Sleep', path: '/sleep' },
@@ -37,6 +39,7 @@ const Dashboard = () => {
     { icon: '🏃', label: 'Exercise', path: '/exercise' },
     { icon: '🌤️', label: 'Weather', path: '/mood' },
     { icon: '📝', label: 'Journal', path: '/journal' },
+    { icon: '✨', label: 'Just for today', action: 'jft' },
   ]
 
   useEffect(() => {
@@ -46,6 +49,13 @@ const Dashboard = () => {
       loadUserName()
     }
   }, [user, selectedDate])
+
+  // Show JFT card on initial load
+  useEffect(() => {
+    if (user) {
+      setShowJFTCard(true)
+    }
+  }, [user])
 
   const loadUserName = async () => {
     if (!user) return
@@ -429,11 +439,17 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="quick-grid">
-          {quickActions.map((action) => (
+          {quickActions.map((action, index) => (
             <div
-              key={action.path}
+              key={action.path || action.action || index}
               className="quick-btn"
-              onClick={() => navigate(action.path)}
+              onClick={() => {
+                if (action.action === 'jft') {
+                  setShowJFTCard(true)
+                } else {
+                  navigate(action.path)
+                }
+              }}
             >
               <div className="icon">{action.icon}</div>
               <div className="label">{action.label}</div>
@@ -463,6 +479,11 @@ const Dashboard = () => {
           {completion}% of daily goals completed
         </p>
       </Card>
+
+      <JFTWelcomeCard
+        isOpen={showJFTCard}
+        onClose={() => setShowJFTCard(false)}
+      />
     </div>
   )
 }
